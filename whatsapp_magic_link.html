@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clix — WhatsApp Magic Link Login Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --wa-green: #25D366;
+  --wa-green-dark: #128C7E;
+  --wa-outgoing: #005c4b;
+  --wa-incoming: #202c33;
+  --wa-chat-bg: #0b141a;
+  --wa-muted: #8696a0;
+  --bg: #060b14;
+  --bg-card: #0d1520;
+  --border: rgba(255,255,255,0.07);
+  --red: #f87171;
+  --blue: #60a5fa;
+  --purple: #a78bfa;
+  --orange: #fb923c;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:#e0e0e0; overflow-x:hidden; }
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#2a3942; border-radius:3px; }
+
+/* ── HERO ── */
+.hero {
+  min-height:88vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:80px 24px; position:relative; overflow:hidden;
+  background: radial-gradient(ellipse 1200px 700px at 50% 30%, rgba(37,211,102,0.07) 0%, transparent 70%),
+              radial-gradient(ellipse 600px 400px at 80% 80%, rgba(7,94,84,0.07) 0%, transparent 60%), var(--bg);
+}
+.hero-grid {
+  position:absolute; inset:0;
+  background-image: linear-gradient(rgba(37,211,102,0.04) 1px,transparent 1px), linear-gradient(90deg,rgba(37,211,102,0.04) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 0%,transparent 100%);
+}
+.hero-pill {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.25);
+  padding:8px 18px; border-radius:100px; font-size:13px; font-weight:500; color:var(--wa-green);
+  margin-bottom:36px; position:relative; z-index:1;
+}
+.hero-pill::before { content:''; width:7px; height:7px; background:var(--wa-green); border-radius:50%; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+.hero h1 { font-size:clamp(38px,6vw,80px); font-weight:900; line-height:1.08; margin-bottom:12px; position:relative; z-index:1; color:#fff; letter-spacing:-2px; }
+.hero h1 span { background:linear-gradient(135deg,var(--wa-green) 0%,#34d399 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero-sub { font-size:clamp(15px,2vw,19px); color:var(--wa-muted); max-width:580px; line-height:1.7; margin-bottom:40px; position:relative; z-index:1; }
+.hero-meta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; position:relative; z-index:1; }
+.meta-tag { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid; }
+.m-g { background:rgba(37,211,102,0.08); color:var(--wa-green); border-color:rgba(37,211,102,0.2); }
+.m-b { background:rgba(96,165,250,0.08);  color:var(--blue);     border-color:rgba(96,165,250,0.2); }
+.m-p { background:rgba(167,139,250,0.08); color:var(--purple);   border-color:rgba(167,139,250,0.2); }
+.m-o { background:rgba(251,146,60,0.08);  color:var(--orange);   border-color:rgba(251,146,60,0.2); }
+
+/* ── NAV ── */
+.nav { position:sticky; top:0; z-index:200; background:rgba(6,11,20,0.92); backdrop-filter:blur(24px); border-bottom:1px solid var(--border); }
+.nav-inner { max-width:1400px; margin:0 auto; padding:0 24px; display:flex; align-items:center; overflow-x:auto; }
+.nav-logo { font-size:14px; font-weight:700; color:var(--wa-green); padding:16px 24px 16px 0; border-right:1px solid var(--border); margin-right:8px; white-space:nowrap; flex-shrink:0; }
+.nav-link { padding:16px 20px; font-size:13px; font-weight:500; color:var(--wa-muted); text-decoration:none; border-bottom:2px solid transparent; transition:all .2s; white-space:nowrap; }
+.nav-link:hover { color:var(--wa-green); border-bottom-color:rgba(37,211,102,0.4); }
+
+/* ── SECTIONS ── */
+.page-section { padding:90px 24px; max-width:1400px; margin:0 auto; }
+.section-divider { border:none; height:1px; background:var(--border); max-width:1400px; margin:0 auto; }
+.sec-head { text-align:center; margin-bottom:64px; }
+.sec-tag { display:inline-block; padding:6px 14px; border-radius:100px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; }
+.tag-g { background:rgba(37,211,102,0.1); color:var(--wa-green); border:1px solid rgba(37,211,102,0.2); }
+.tag-b { background:rgba(96,165,250,0.1);  color:var(--blue);    border:1px solid rgba(96,165,250,0.2); }
+.tag-p { background:rgba(167,139,250,0.1); color:var(--purple);  border:1px solid rgba(167,139,250,0.2); }
+.sec-title { font-size:clamp(24px,3.5vw,44px); font-weight:800; color:#fff; letter-spacing:-1px; margin-bottom:14px; }
+.sec-desc { font-size:16px; color:var(--wa-muted); max-width:560px; margin:0 auto; line-height:1.7; }
+
+/* ── USER JOURNEY ── */
+.journey-wrap { display:flex; align-items:flex-start; justify-content:center; flex-wrap:wrap; gap:0; }
+.journey-step { display:flex; flex-direction:column; align-items:center; text-align:center; width:150px; flex-shrink:0; }
+.journey-icon-wrap { position:relative; }
+.journey-icon {
+  width:72px; height:72px; border-radius:22px; display:flex; align-items:center; justify-content:center;
+  font-size:28px; border:2px solid; position:relative; z-index:1;
+  transition: transform .2s;
+}
+.journey-icon:hover { transform:scale(1.08); }
+.ji-g { background:rgba(37,211,102,0.1); border-color:rgba(37,211,102,0.3); }
+.ji-b { background:rgba(96,165,250,0.1);  border-color:rgba(96,165,250,0.3); }
+.ji-p { background:rgba(167,139,250,0.1); border-color:rgba(167,139,250,0.3); }
+.ji-o { background:rgba(251,146,60,0.1);  border-color:rgba(251,146,60,0.3); }
+.ji-t { background:rgba(20,184,166,0.1);  border-color:rgba(20,184,166,0.3); }
+.journey-num {
+  position:absolute; top:-8px; left:-8px; width:22px; height:22px;
+  border-radius:50%; background:var(--wa-green); color:#000;
+  font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--bg); z-index:2;
+}
+.journey-label { font-size:13px; font-weight:700; color:#fff; margin-top:14px; margin-bottom:5px; }
+.journey-sub { font-size:11.5px; color:var(--wa-muted); line-height:1.55; }
+.journey-arrow {
+  display:flex; align-items:center; padding:0 4px; margin-top:28px; flex-shrink:0;
+}
+.j-arr {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+}
+.j-arr-line { width:36px; height:2px; background:linear-gradient(90deg,rgba(37,211,102,.2),rgba(37,211,102,.6)); position:relative; }
+.j-arr-line::after { content:''; position:absolute; right:-6px; top:-4px; border-left:8px solid rgba(37,211,102,.6); border-top:5px solid transparent; border-bottom:5px solid transparent; }
+.j-arr-label { font-size:9px; color:var(--wa-muted); font-weight:500; white-space:nowrap; }
+
+/* Split arrows (two paths) */
+.journey-split { display:flex; flex-direction:column; align-items:center; gap:0; flex-shrink:0; padding:0 8px; margin-top:20px; }
+.j-split-line-v { width:2px; height:20px; background:rgba(37,211,102,.3); }
+.j-split-row { display:flex; gap:8px; align-items:center; }
+.j-split-line-h { width:20px; height:2px; background:rgba(37,211,102,.3); }
+.j-split-dot { width:6px; height:6px; border-radius:50%; background:rgba(37,211,102,.5); }
+
+/* ── PHONE FRAME ── */
+.phone {
+  width:230px; height:490px; border-radius:38px; background:#000; border:6px solid #1c2836;
+  box-shadow: 0 0 0 1px #2a3a4a, 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
+  overflow:hidden; flex-shrink:0;
+}
+.phone-inner { display:flex; flex-direction:column; height:100%; }
+.sbar { background:#0a0f14; padding:6px 14px 4px; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:#e9edef; font-weight:600; flex-shrink:0; }
+.sbar-right { display:flex; gap:4px; align-items:center; }
+.wa-hdr { background:#1f2c34; padding:8px 10px; display:flex; align-items:center; gap:8px; flex-shrink:0; border-bottom:1px solid rgba(255,255,255,0.04); }
+.wa-back { font-size:14px; color:var(--wa-muted); }
+.wa-ava { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--wa-green),var(--wa-green-dark)); display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.wa-info { flex:1; }
+.wa-name { font-size:12px; font-weight:600; color:#e9edef; }
+.wa-status { font-size:10px; color:var(--wa-green); }
+.wa-hdr-ic { font-size:13px; color:var(--wa-muted); display:flex; gap:10px; }
+.wa-chat { flex:1; background:var(--wa-chat-bg); overflow-y:auto; padding:10px 8px; display:flex; flex-direction:column; gap:6px; }
+.msg { max-width:88%; padding:6px 9px 4px; border-radius:8px; font-size:11px; line-height:1.55; color:#e9edef; position:relative; word-break:break-word; }
+.msg.in  { background:var(--wa-incoming); align-self:flex-start; border-radius:0 8px 8px 8px; }
+.msg.out { background:var(--wa-outgoing); align-self:flex-end;   border-radius:8px 8px 0 8px; }
+.msg.err { background:#2d1515; border:1px solid rgba(248,113,113,0.25); align-self:flex-start; border-radius:0 8px 8px 8px; }
+.msg.suc { background:#0a2d1a; border:1px solid rgba(37,211,102,0.25); align-self:flex-start; border-radius:0 8px 8px 8px; }
+.msg-time { font-size:9px; color:var(--wa-muted); text-align:right; margin-top:3px; }
+.msg-check { color:#53bdeb; }
+.wa-btn-list { margin-top:6px; display:flex; flex-direction:column; gap:4px; }
+.wa-btn { background:rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.2); border-radius:6px; padding:6px 8px; font-size:10px; color:var(--wa-green); font-weight:500; }
+.wa-btn.sel { background:rgba(37,211,102,0.2); font-weight:700; }
+.wa-inp { background:#1f2c34; padding:6px 8px; display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.wa-inp-field { flex:1; background:#2a3942; border-radius:18px; padding:6px 12px; font-size:10px; color:var(--wa-muted); }
+.wa-send { width:28px; height:28px; border-radius:50%; background:var(--wa-green); display:flex; align-items:center; justify-content:center; font-size:12px; }
+.date-chip { background:rgba(255,255,255,0.05); border-radius:100px; padding:3px 10px; font-size:9px; color:var(--wa-muted); text-align:center; margin:4px auto; width:fit-content; display:block; }
+
+/* ── FILM STRIP ── */
+.film-strip { display:flex; align-items:flex-start; gap:0; overflow-x:auto; padding:16px 0 40px; -webkit-overflow-scrolling:touch; }
+.film-strip::-webkit-scrollbar { height:4px; }
+.film-step { display:flex; align-items:flex-start; flex-shrink:0; }
+.step-card { display:flex; flex-direction:column; align-items:center; gap:14px; width:252px; }
+.step-num { width:26px; height:26px; border-radius:50%; background:var(--wa-green); color:#000; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+.step-num.e { background:var(--red); }
+.step-txt { text-align:center; font-size:12px; color:var(--wa-muted); line-height:1.5; max-width:200px; }
+.step-txt strong { display:block; font-size:13px; color:#fff; font-weight:600; margin-bottom:4px; }
+.connector { display:flex; align-items:center; padding:0 8px; padding-top:190px; flex-shrink:0; }
+.arr { width:44px; height:2px; background:linear-gradient(90deg,rgba(37,211,102,.3),rgba(37,211,102,.8)); position:relative; }
+.arr::after { content:''; position:absolute; right:-7px; top:-4px; border-left:9px solid rgba(37,211,102,.8); border-top:5px solid transparent; border-bottom:5px solid transparent; }
+.arr.r { background:linear-gradient(90deg,rgba(248,113,113,.3),rgba(248,113,113,.8)); }
+.arr.r::after { border-left-color:rgba(248,113,113,.8); }
+.flow-sep { border:none; height:1px; background:var(--border); margin:60px 0; }
+.flow-label { display:flex; align-items:center; gap:16px; margin-bottom:28px; }
+.flb { padding:5px 14px; border-radius:100px; font-size:12px; font-weight:600; }
+.flb.g { background:rgba(37,211,102,0.1); color:var(--wa-green); border:1px solid rgba(37,211,102,0.2); }
+.flb.r { background:rgba(248,113,113,0.1); color:var(--red);      border:1px solid rgba(248,113,113,0.2); }
+.flow-label-line { flex:1; height:1px; background:var(--border); }
+
+/* ── FLOW DIAGRAM ── */
+.fd-col { display:flex; flex-direction:column; align-items:center; gap:0; min-width:280px; max-width:320px; flex:1; }
+.fd-box { width:100%; padding:13px 16px; border-radius:14px; text-align:center; font-size:13px; font-weight:600; border:1px solid; }
+.fd-box.start  { background:rgba(37,211,102,.12); border-color:rgba(37,211,102,.4);  color:var(--wa-green); }
+.fd-box.menu   { background:rgba(96,165,250,.1);  border-color:rgba(96,165,250,.35); color:var(--blue); }
+.fd-box.action { background:var(--bg-card); border-color:var(--border); color:#e9edef; }
+.fd-box.decide { background:rgba(251,146,60,.08); border-color:rgba(251,146,60,.3);  color:var(--orange); }
+.fd-box.success{ background:rgba(37,211,102,.1);  border-color:rgba(37,211,102,.3);  color:var(--wa-green); }
+.fd-box.error  { background:rgba(248,113,113,.1); border-color:rgba(248,113,113,.3); color:var(--red); }
+.fd-box small  { display:block; font-size:11px; font-weight:400; opacity:.75; margin-top:3px; }
+.fd-arr { width:2px; height:28px; margin:0 auto; background:linear-gradient(180deg,rgba(37,211,102,.5),rgba(37,211,102,.15)); position:relative; }
+.fd-arr::after { content:''; position:absolute; bottom:-6px; left:-4px; border-top:7px solid rgba(37,211,102,.5); border-left:5px solid transparent; border-right:5px solid transparent; }
+.fd-arr.red { background:linear-gradient(180deg,rgba(248,113,113,.5),rgba(248,113,113,.15)); }
+.fd-arr.red::after { border-top-color:rgba(248,113,113,.5); }
+.fd-split-box { padding:10px 12px; border-radius:10px; text-align:center; font-size:12px; font-weight:600; width:100%; border:1px solid; }
+.fd-split-box.yes { background:rgba(37,211,102,.1); border-color:rgba(37,211,102,.3); color:var(--wa-green); }
+.fd-split-box.no  { background:rgba(248,113,113,.1); border-color:rgba(248,113,113,.3); color:var(--red); }
+.fd-split-arr { width:2px; height:20px; margin:0 auto; background:rgba(37,211,102,.4); position:relative; }
+.fd-split-arr::after { content:''; position:absolute; bottom:-5px; left:-4px; border-top:6px solid rgba(37,211,102,.4); border-left:5px solid transparent; border-right:5px solid transparent; }
+.fd-col-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:20px; padding:6px 16px; border-radius:100px; }
+.fd-col-title.g { background:rgba(37,211,102,.1); color:var(--wa-green); border:1px solid rgba(37,211,102,.2); }
+.fd-col-title.p { background:rgba(167,139,250,.1); color:var(--purple); border:1px solid rgba(167,139,250,.2); }
+.fd-divider { width:1px; background:var(--border); align-self:stretch; margin:0 10px; display:none; }
+@media (min-width:700px) { .fd-divider { display:block; } }
+
+/* ── FADE ── */
+.fade-up { opacity:0; transform:translateY(24px); transition:opacity .5s ease,transform .5s ease; }
+.fade-up.visible { opacity:1; transform:translateY(0); }
+
+@keyframes load { from{width:0} to{width:100%} }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-pill">📱 Proposed Feature — v1.1</div>
+  <h1><span>Clix</span> WhatsApp<br>Magic Link Login</h1>
+  <p class="hero-sub">
+    Passwordless login for the Clix app — users tap once inside WhatsApp
+    and they're in. No password, no friction.
+  </p>
+  <div class="hero-meta">
+    <span class="meta-tag m-g">✓ One-tap Login</span>
+    <span class="meta-tag m-b">✓ Email OTP Linking</span>
+    <span class="meta-tag m-p">✓ Deep Link Support</span>
+    <span class="meta-tag m-o">✓ Secure &amp; Rate Limited</span>
+  </div>
+</section>
+
+<!-- ══ NAV ══ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">▶ Clix</div>
+    <a class="nav-link" href="#how-it-works">How It Works</a>
+    <a class="nav-link" href="#flow-diagram">Flow Diagram</a>
+    <a class="nav-link" href="#main-menu">Main Menu</a>
+    <a class="nav-link" href="#login-flow">Login Flow</a>
+    <a class="nav-link" href="#link-flow">Link Mobile</a>
+  </div>
+</nav>
+
+<!-- ══ HOW IT WORKS ══ -->
+<section id="how-it-works" class="page-section">
+  <div class="sec-head fade-up">
+    <div class="sec-tag tag-g">How It Works</div>
+    <h2 class="sec-title">Simple as Sending a Message</h2>
+    <p class="sec-desc">The entire login experience lives inside WhatsApp — no app switch, no password, no friction.</p>
+  </div>
+
+  <div class="journey-wrap fade-up">
+
+    <!-- Step 1 -->
+    <div class="journey-step">
+      <div class="journey-icon-wrap">
+        <div class="journey-icon ji-g">📱</div>
+        <div class="journey-num">1</div>
+      </div>
+      <div class="journey-label">Open WhatsApp</div>
+      <div class="journey-sub">User searches for the Clix Bot number</div>
+    </div>
+
+    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
+
+    <!-- Step 2 -->
+    <div class="journey-step">
+      <div class="journey-icon-wrap">
+        <div class="journey-icon ji-b">💬</div>
+        <div class="journey-num">2</div>
+      </div>
+      <div class="journey-label">Send a Message</div>
+      <div class="journey-sub">Say "Hi" — anything works to trigger the bot</div>
+    </div>
+
+    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
+
+    <!-- Step 3 -->
+    <div class="journey-step">
+      <div class="journey-icon-wrap">
+        <div class="journey-icon ji-p">🤖</div>
+        <div class="journey-num">3</div>
+      </div>
+      <div class="journey-label">Main Menu</div>
+      <div class="journey-sub">Clix Bot shows Login &amp; Link Mobile options</div>
+    </div>
+
+    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
+
+    <!-- Step 4 -->
+    <div class="journey-step">
+      <div class="journey-icon-wrap">
+        <div class="journey-icon ji-o">👆</div>
+        <div class="journey-num">4</div>
+      </div>
+      <div class="journey-label">User Chooses</div>
+      <div class="journey-sub">Login (existing) or Link Mobile (first time)</div>
+    </div>
+
+    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
+
+    <!-- Step 5 -->
+    <div class="journey-step">
+      <div class="journey-icon-wrap">
+        <div class="journey-icon ji-t">🔗</div>
+        <div class="journey-num">5</div>
+      </div>
+      <div class="journey-label">Magic Link / OTP</div>
+      <div class="journey-sub">Bot sends a secure link or email OTP to verify</div>
+    </div>
+
+    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
+
+    <!-- Step 6 -->
+    <div class="journey-step">
+      <div class="journey-icon-wrap">
+        <div class="journey-icon ji-g">✅</div>
+        <div class="journey-num">6</div>
+      </div>
+      <div class="journey-label">In the App!</div>
+      <div class="journey-sub">Clix opens and the user is logged in — done</div>
+    </div>
+
+  </div>
+
+  <!-- Two-path callout -->
+  <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:56px;" class="fade-up">
+    <div style="background:var(--bg-card);border:1px solid rgba(37,211,102,.2);border-radius:20px;padding:28px 32px;max-width:380px;flex:1;">
+      <div style="font-size:22px;margin-bottom:10px">🔐</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:8px">Already a Clix user?</div>
+      <div style="font-size:14px;color:var(--wa-muted);line-height:1.65">If your WhatsApp number is already linked to your Clix account, just tap <strong style="color:var(--wa-green)">Login</strong> — you'll get a magic link and be in the app within seconds.</div>
+    </div>
+    <div style="background:var(--bg-card);border:1px solid rgba(167,139,250,.2);border-radius:20px;padding:28px 32px;max-width:380px;flex:1;">
+      <div style="font-size:22px;margin-bottom:10px">🔗</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:8px">First time on WhatsApp?</div>
+      <div style="font-size:14px;color:var(--wa-muted);line-height:1.65">Tap <strong style="color:var(--purple)">Link Mobile with Email</strong>, enter your Clix email, verify with OTP — your number is linked and future logins take one tap.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ══ FLOW DIAGRAM ══ -->
+<section id="flow-diagram" class="page-section">
+  <div class="sec-head fade-up">
+    <div class="sec-tag tag-b">Complete Flow</div>
+    <h2 class="sec-title">End-to-End User Journey</h2>
+    <p class="sec-desc">Every path a user can take — from saying "Hi" to being fully logged in or linked.</p>
+  </div>
+
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:40px;" class="fade-up">
+    <div class="fd-box start" style="max-width:380px;width:100%;">💬 User opens WhatsApp &amp; sends "Hi"</div>
+    <div class="fd-arr"></div>
+    <div class="fd-box menu" style="max-width:380px;width:100%;">
+      🤖 Clix Bot — Main Menu<br>
+      <span style="font-size:12px;font-weight:400;opacity:.8">Login · Link Mobile with Email · Help · Contact Us</span>
+    </div>
+    <div style="display:flex;gap:120px;align-items:flex-start;flex-wrap:wrap;justify-content:center;width:100%;">
+      <div style="display:flex;flex-direction:column;align-items:center;"><div class="fd-arr"></div></div>
+      <div style="display:flex;flex-direction:column;align-items:center;"><div class="fd-arr"></div></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:40px;justify-content:center;flex-wrap:wrap;" class="fade-up">
+
+    <!-- Login track -->
+    <div class="fd-col">
+      <div class="fd-col-title g">🔐 Login Flow</div>
+      <div class="fd-box action">User taps <strong>"Login to App"</strong></div>
+      <div class="fd-arr"></div>
+      <div class="fd-box decide">Mobile number registered in Clix?</div>
+      <div style="display:flex;gap:16px;width:100%;">
+        <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
+          <div class="fd-arr"></div>
+          <div class="fd-split-box yes">✓ YES</div>
+          <div class="fd-arr"></div>
+          <div class="fd-box action" style="font-size:12px;">🔗 Magic link sent<br><small>10 min expiry, single use</small></div>
+          <div class="fd-arr"></div>
+          <div class="fd-box decide" style="font-size:12px;">Clix app installed?</div>
+          <div style="display:flex;gap:10px;width:100%;">
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
+              <div class="fd-arr"></div>
+              <div class="fd-split-box yes" style="font-size:11px;">Opens App</div>
+              <div class="fd-arr"></div>
+              <div class="fd-box success" style="font-size:12px;">🎉 Logged In!</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
+              <div class="fd-arr red"></div>
+              <div class="fd-split-box no" style="font-size:11px;">Not installed</div>
+              <div class="fd-arr"></div>
+              <div class="fd-box action" style="font-size:11px;">App Store /<br>Play Store</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
+          <div class="fd-arr red"></div>
+          <div class="fd-split-box no">✕ NO</div>
+          <div class="fd-arr red"></div>
+          <div class="fd-box error" style="font-size:12px;">❌ Not registered<br><small>Suggests Link Mobile option</small></div>
+          <div class="fd-arr"></div>
+          <div class="fd-box menu" style="font-size:12px;">Main Menu shown again</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fd-divider"></div>
+
+    <!-- Link Mobile track -->
+    <div class="fd-col">
+      <div class="fd-col-title p">🔗 Link Mobile Flow</div>
+      <div class="fd-box action">User taps <strong>"Link Mobile with Email"</strong></div>
+      <div class="fd-arr"></div>
+      <div class="fd-box action">Bot asks for email address</div>
+      <div class="fd-arr"></div>
+      <div class="fd-box action">User enters their Clix email</div>
+      <div class="fd-arr"></div>
+      <div class="fd-box decide">Email found in Clix?</div>
+      <div style="display:flex;gap:16px;width:100%;">
+        <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
+          <div class="fd-arr"></div>
+          <div class="fd-split-box yes" style="font-size:11px;">✓ Found</div>
+          <div class="fd-arr"></div>
+          <div class="fd-box decide" style="font-size:11px;">Mobile already linked?</div>
+          <div style="display:flex;gap:8px;width:100%;">
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
+              <div class="fd-arr red"></div>
+              <div class="fd-split-box no" style="font-size:10px;">✕ Linked</div>
+              <div class="fd-arr red"></div>
+              <div class="fd-box error" style="font-size:11px;">❌ Mobile exists<br><small>Use Login instead</small></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
+              <div class="fd-arr"></div>
+              <div class="fd-split-box yes" style="font-size:10px;">✓ Free</div>
+              <div class="fd-arr"></div>
+              <div class="fd-box action" style="font-size:11px;">📧 OTP sent to email</div>
+              <div class="fd-arr"></div>
+              <div class="fd-box action" style="font-size:11px;">User enters OTP</div>
+              <div class="fd-arr"></div>
+              <div class="fd-box success" style="font-size:11px;">✅ Linked!<br><small>Main menu shown again</small></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
+          <div class="fd-arr red"></div>
+          <div class="fd-split-box no" style="font-size:11px;">✕ Not found</div>
+          <div class="fd-arr red"></div>
+          <div class="fd-box error" style="font-size:12px;">❌ No account<br><small>Sign up in app first</small></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ══ MAIN MENU ══ -->
+<section id="main-menu" class="page-section">
+  <div class="sec-head fade-up">
+    <div class="sec-tag tag-g">Entry Point</div>
+    <h2 class="sec-title">Main Menu</h2>
+    <p class="sec-desc">Every interaction starts here. The user sends any message and Clix Bot immediately shows all options — Login and Link Mobile are both visible from the start.</p>
+  </div>
+
+  <div style="display:flex;justify-content:center;gap:64px;align-items:flex-start;flex-wrap:wrap;" class="fade-up">
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:41</span><div class="sbar-right"><span>●●●●</span><span>WiFi</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>📞</span><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg out">Hi 👋<div class="msg-time">9:41 <span class="msg-check">✓✓</span></div></div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>User sends "Hi"</strong>Any message triggers the welcome flow</div>
+    </div>
+
+    <div class="connector"><div class="arr"></div></div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:41</span><div class="sbar-right"><span>●●●●</span><span>WiFi</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>📞</span><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg out">Hi 👋<div class="msg-time">9:41 <span class="msg-check">✓✓</span></div></div>
+          <div class="msg in">
+            <strong style="color:#25D366">Welcome to Clix! 👋</strong><br><br>
+            How can we help you today?<br>Please choose an option:
+            <div class="wa-btn-list">
+              <div class="wa-btn">1. 🔐 Login to App</div>
+              <div class="wa-btn">2. 🔗 Link Mobile with Email</div>
+              <div class="wa-btn">3. ❓ Help &amp; Support</div>
+              <div class="wa-btn">4. 📞 Contact Us</div>
+            </div>
+            <div class="msg-time">9:41</div>
+          </div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>Clix Bot shows main menu</strong>Login &amp; Link Mobile visible from the start</div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ══ LOGIN FLOW ══ -->
+<section id="login-flow" class="page-section">
+  <div class="sec-head fade-up">
+    <div class="sec-tag tag-b">Flow 1 — Login</div>
+    <h2 class="sec-title">Login via Magic Link</h2>
+    <p class="sec-desc">For users whose WhatsApp number is already linked to a Clix account. One tap, one link, logged in.</p>
+  </div>
+
+  <!-- Happy Path -->
+  <div class="flow-label fade-up">
+    <div class="flb g">✓ Happy Path — Registered User</div>
+    <div class="flow-label-line"></div>
+  </div>
+
+  <div class="film-strip fade-up">
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">1</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:41</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg in">
+            <strong style="color:#25D366">Welcome to Clix! 👋</strong><br><br>Please choose:
+            <div class="wa-btn-list">
+              <div class="wa-btn sel">1. 🔐 Login to App</div>
+              <div class="wa-btn">2. 🔗 Link Mobile with Email</div>
+              <div class="wa-btn">3. ❓ Help &amp; Support</div>
+            </div>
+            <div class="msg-time">9:41</div>
+          </div>
+          <div class="msg out">🔐 Login to App<div class="msg-time">9:42 <span class="msg-check">✓✓</span></div></div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>User taps Login</strong>Selects "Login to App" from the menu</div>
+    </div></div>
+
+    <div class="connector"><div class="arr"></div></div>
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">2</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:42</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg out">🔐 Login to App<div class="msg-time">9:42 <span class="msg-check">✓✓</span></div></div>
+          <div class="msg in">
+            🔐 <strong>Your Login Link</strong><br><br>
+            Tap the link below to log in to Clix:<br><br>
+            <span style="color:#53bdeb;word-break:break-all">https://app.clix.com/auth?token=a3f9e...</span><br><br>
+            ⚠️ Expires in <strong>10 minutes</strong><br>
+            ⚠️ Do not share this link
+            <div class="msg-time">9:42</div>
+          </div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>Magic link sent</strong>Secure one-time login link delivered</div>
+    </div></div>
+
+    <div class="connector"><div class="arr"></div></div>
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">3</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar" style="background:#075E54"><span>9:42</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div style="background:linear-gradient(135deg,#0a1a0f,#0d2d1a);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px;">
+          <div style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 8px 32px rgba(37,211,102,.4)">▶</div>
+          <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.5px">Clix</div>
+          <div style="font-size:12px;color:#25D366">✓ Verifying your link...</div>
+          <div style="width:80%;height:3px;background:#1a3a2a;border-radius:2px;overflow:hidden;">
+            <div style="width:100%;height:100%;background:linear-gradient(90deg,#25D366,#34d399);animation:load .8s ease forwards;"></div>
+          </div>
+        </div>
+        <div style="background:#0a2d1a;border-top:1px solid rgba(37,211,102,.2);padding:14px;text-align:center;">
+          <div style="font-size:16px;margin-bottom:6px">🎉</div>
+          <div style="font-size:12px;font-weight:700;color:#25D366">Welcome back!</div>
+          <div style="font-size:11px;color:#8696a0;margin-top:2px">Redirecting to home...</div>
+        </div>
+      </div></div>
+      <div class="step-txt"><strong>Clix opens — logged in!</strong>Deep link intercepted, JWT issued automatically</div>
+    </div></div>
+
+  </div>
+
+  <hr class="flow-sep">
+
+  <!-- Error: Not Registered -->
+  <div class="flow-label fade-up">
+    <div class="flb r">✕ Error Path — Mobile Not Registered</div>
+    <div class="flow-label-line"></div>
+  </div>
+
+  <div class="film-strip fade-up">
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num e">1</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:41</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg in">
+            <strong style="color:#25D366">Welcome to Clix! 👋</strong><br><br>Please choose:
+            <div class="wa-btn-list">
+              <div class="wa-btn sel">1. 🔐 Login to App</div>
+              <div class="wa-btn">2. 🔗 Link Mobile with Email</div>
+            </div>
+            <div class="msg-time">9:41</div>
+          </div>
+          <div class="msg out">🔐 Login to App<div class="msg-time">9:42 <span class="msg-check">✓✓</span></div></div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>User taps Login</strong>Mobile number not found in Clix</div>
+    </div></div>
+
+    <div class="connector"><div class="arr r"></div></div>
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num e">2</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:42</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg out">🔐 Login to App<div class="msg-time">9:42 <span class="msg-check">✓✓</span></div></div>
+          <div class="msg err">
+            ❌ <strong>Mobile Not Registered</strong><br><br>
+            Your mobile number is not linked to any Clix account.<br><br>
+            Use option <strong style="color:#25D366">[2] 🔗 Link Mobile with Email</strong> to connect your WhatsApp number to your account.
+            <div class="msg-time">9:42</div>
+          </div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>Error shown</strong>User directed to Link Mobile option</div>
+    </div></div>
+
+    <div class="connector"><div class="arr"></div></div>
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">3</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:42</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg err">❌ Mobile not registered. Use option [2] to link.<div class="msg-time">9:42</div></div>
+          <div class="msg in">
+            Please choose an option:
+            <div class="wa-btn-list">
+              <div class="wa-btn">1. 🔐 Login to App</div>
+              <div class="wa-btn sel">2. 🔗 Link Mobile with Email</div>
+              <div class="wa-btn">3. ❓ Help &amp; Support</div>
+              <div class="wa-btn">4. 📞 Contact Us</div>
+            </div>
+            <div class="msg-time">9:42</div>
+          </div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>Main menu re-shown</strong>User can immediately tap option 2</div>
+    </div></div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ══ LINK MOBILE FLOW ══ -->
+<section id="link-flow" class="page-section">
+  <div class="sec-head fade-up">
+    <div class="sec-tag tag-p">Flow 2 — Link Mobile</div>
+    <h2 class="sec-title">Link Mobile with Email</h2>
+    <p class="sec-desc">First-time WhatsApp login setup. User proves they own their Clix account via email OTP — after that, magic link login works forever.</p>
+  </div>
+
+  <!-- Happy Path -->
+  <div class="flow-label fade-up">
+    <div class="flb g">✓ Happy Path — Successful Linking</div>
+    <div class="flow-label-line"></div>
+  </div>
+
+  <div class="film-strip fade-up">
+
+    <!-- Step 1 -->
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">1</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:43</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg in">
+            Please choose:
+            <div class="wa-btn-list">
+              <div class="wa-btn">1. 🔐 Login to App</div>
+              <div class="wa-btn sel">2. 🔗 Link Mobile with Email</div>
+              <div class="wa-btn">3. ❓ Help</div>
+            </div>
+            <div class="msg-time">9:43</div>
+          </div>
+          <div class="msg out">🔗 Link Mobile with Email<div class="msg-time">9:43 <span class="msg-check">✓✓</span></div></div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>User selects option 2</strong>Initiates the linking flow</div>
+    </div></div>
+
+    <div class="connector"><div class="arr"></div></div>
+
+    <!-- Step 2 -->
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">2</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:43</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg out">🔗 Link Mobile with Email<div class="msg-time">9:43 <span class="msg-check">✓✓</span></div></div>
+          <div class="msg in">
+            🔗 <strong>Link Mobile with Email</strong><br><br>
+            Please enter the <strong>email address</strong> linked to your Clix account:
+            <div class="msg-time">9:43</div>
+          </div>
+          <div class="msg out">user@example.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>User enters email</strong>Clix checks it exists &amp; mobile is not yet linked</div>
+    </div></div>
+
+    <div class="connector"><div class="arr"></div></div>
+
+    <!-- Step 3 -->
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">3</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:44</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg out">user@example.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
+          <div class="msg in">
+            ✅ <strong>OTP Sent!</strong><br><br>
+            We've sent a <strong>6-digit OTP</strong> to:<br>
+            <span style="color:#53bdeb">user@example.com</span><br><br>
+            Please enter the OTP here to verify.<br><br>
+            ⚠️ Expires in <strong>10 minutes</strong>
+            <div class="msg-time">9:44</div>
+          </div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>OTP sent to email</strong>6-digit code, single use, 10 min expiry</div>
+    </div></div>
+
+    <div class="connector"><div class="arr"></div></div>
+
+    <!-- Step 4 -->
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">4</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:45</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg in">OTP expires in <strong>10 minutes</strong><div class="msg-time">9:44</div></div>
+          <div class="msg out">847291<div class="msg-time">9:45 <span class="msg-check">✓✓</span></div></div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>User enters OTP</strong>Checks email, replies with 6-digit code</div>
+    </div></div>
+
+    <div class="connector"><div class="arr"></div></div>
+
+    <!-- Step 5 -->
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">5</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:45</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg out">847291<div class="msg-time">9:45 <span class="msg-check">✓✓</span></div></div>
+          <div class="msg suc">
+            🎉 <strong style="color:#25D366">Successfully Linked!</strong><br><br>
+            Your mobile number is now linked to your Clix account.<br><br>
+            Use option <strong style="color:#25D366">[1] 🔐 Login</strong> to access Clix via WhatsApp anytime!
+            <div class="msg-time">9:45</div>
+          </div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>Mobile linked! 🎉</strong>OTP verified, number saved to Clix account</div>
+    </div></div>
+
+    <div class="connector"><div class="arr"></div></div>
+
+    <!-- Step 6: Main menu re-shown -->
+    <div class="film-step"><div class="step-card">
+      <div class="step-num">6</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:45</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg suc">🎉 Successfully Linked!<div class="msg-time">9:45</div></div>
+          <div class="msg in">
+            What would you like to do next?
+            <div class="wa-btn-list">
+              <div class="wa-btn sel">1. 🔐 Login to App</div>
+              <div class="wa-btn">2. 🔗 Link Mobile with Email</div>
+              <div class="wa-btn">3. ❓ Help &amp; Support</div>
+              <div class="wa-btn">4. 📞 Contact Us</div>
+            </div>
+            <div class="msg-time">9:45</div>
+          </div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>Main menu re-shown</strong>User can instantly tap Login to enter the app</div>
+    </div></div>
+
+  </div>
+
+  <hr class="flow-sep">
+
+  <!-- Error: Mobile Already Linked -->
+  <div class="flow-label fade-up">
+    <div class="flb r">✕ Error Path — Mobile Number Already Linked</div>
+    <div class="flow-label-line"></div>
+  </div>
+
+  <div class="film-strip fade-up">
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num e">1</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:43</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg in">
+            Please choose:
+            <div class="wa-btn-list">
+              <div class="wa-btn">1. 🔐 Login to App</div>
+              <div class="wa-btn sel">2. 🔗 Link Mobile with Email</div>
+            </div>
+            <div class="msg-time">9:43</div>
+          </div>
+          <div class="msg out">🔗 Link Mobile with Email<div class="msg-time">9:43 <span class="msg-check">✓✓</span></div></div>
+          <div class="msg in">Please enter your Clix email address:<div class="msg-time">9:43</div></div>
+          <div class="msg out">user@example.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>User enters email</strong>Clix checks if this mobile is already linked</div>
+    </div></div>
+
+    <div class="connector"><div class="arr r"></div></div>
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num e">2</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:44</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg out">user@example.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
+          <div class="msg err">
+            ❌ <strong>Mobile Already Linked</strong><br><br>
+            This mobile number is <strong>already linked</strong> to a Clix account.<br><br>
+            Use option <strong style="color:#25D366">[1] 🔐 Login</strong> to access the app directly.
+            <div class="msg-time">9:44</div>
+          </div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>Duplicate detected</strong>Mobile already exists — directed to Login</div>
+    </div></div>
+
+  </div>
+
+  <hr class="flow-sep">
+
+  <!-- Error: Email Not Found -->
+  <div class="flow-label fade-up">
+    <div class="flb r">✕ Error Path — Email Not in Clix</div>
+    <div class="flow-label-line"></div>
+  </div>
+
+  <div class="film-strip fade-up">
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num e">1</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:44</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg in">Please enter your Clix email address:<div class="msg-time">9:44</div></div>
+          <div class="msg out">unknown@xyz.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>User enters email</strong>Email not found in Clix database</div>
+    </div></div>
+
+    <div class="connector"><div class="arr r"></div></div>
+
+    <div class="film-step"><div class="step-card">
+      <div class="step-num e">2</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="sbar"><span>9:44</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
+        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
+        <div class="wa-chat">
+          <span class="date-chip">Today</span>
+          <div class="msg out">unknown@xyz.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
+          <div class="msg err">
+            ❌ <strong>Account Not Found</strong><br><br>
+            No Clix account found with this email.<br><br>
+            Please <strong>sign up in the Clix app first</strong>, then come back here to link your mobile number.<br><br>
+            📲 Download: <span style="color:#53bdeb">app.clix.com</span>
+            <div class="msg-time">9:44</div>
+          </div>
+        </div>
+        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
+      </div></div>
+      <div class="step-txt"><strong>Email not found</strong>User directed to sign up in Clix first</div>
+    </div></div>
+
+  </div>
+</section>
+
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.06 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (s.getBoundingClientRect().top <= 80) cur = s.id; });
+  navLinks.forEach(l => {
+    const a = l.getAttribute('href') === '#' + cur;
+    l.style.color = a ? 'var(--wa-green)' : '';
+    l.style.borderBottomColor = a ? 'var(--wa-green)' : '';
+  });
+}, { passive:true });
+</script>
+</body>
+</html>

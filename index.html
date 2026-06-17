@@ -1,966 +1,1089 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Clix — WhatsApp Magic Link Login Demo</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chinmaya Clix · Coupon Card & POS Redemption — Feature KT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;500;600;700&family=Domine:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <style>
-:root {
-  --wa-green: #25D366;
-  --wa-green-dark: #128C7E;
-  --wa-outgoing: #005c4b;
-  --wa-incoming: #202c33;
-  --wa-chat-bg: #0b141a;
-  --wa-muted: #8696a0;
-  --bg: #060b14;
-  --bg-card: #0d1520;
-  --border: rgba(255,255,255,0.07);
-  --red: #f87171;
-  --blue: #60a5fa;
-  --purple: #a78bfa;
-  --orange: #fb923c;
-}
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; }
-body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:#e0e0e0; overflow-x:hidden; }
-::-webkit-scrollbar { width:5px; height:5px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:#2a3942; border-radius:3px; }
+  :root{
+    --bg:#FBF8F6; --fg:#1A3F4A; --card:#FDFBFA; --muted-bg:#DCE4E7; --muted-fg:#3D5C66;
+    --border:#B4C9CF; --input-border:#C2D1D6; --primary:#FC9369; --primary-d:#f57a48;
+    --primary-fg:#FBF8F6; --navy:#152a3a; --navy-2:#0f222e; --portal-bg:#0a171f; --portal-primary:#fc916a;
+    --ring:#C47D3D;
+    --green-bg:#dcfce7; --green-fg:#15803d; --green-bd:#86efac;
+    --blue-bg:#dbeafe; --blue-fg:#1d4ed8; --blue-bd:#93c5fd;
+    --amber-bg:#fef3c7; --amber-fg:#b45309; --amber-bd:#fcd34d;
+    --purple-bg:#f3e8ff; --purple-fg:#7e22ce; --purple-bd:#d8b4fe;
+    --gray-bg:#e8eef0; --gray-fg:#3D5C66; --gray-bd:#cdd9dd;
+    --red-bg:#fee2e2; --red-fg:#b91c1c; --red-bd:#fca5a5;
+    --shadow:0 1px 3px rgba(21,42,58,.08),0 8px 24px rgba(21,42,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:"Anek Latin",system-ui,sans-serif;font-size:15px;line-height:1.55}
+  h1,h2,h3,h4{font-family:"Domine",Georgia,serif;margin:0}
+  code,.mono{font-family:"JetBrains Mono",monospace}
+  a{color:var(--primary-d);text-decoration:none}
 
-/* ── HERO ── */
-.hero {
-  min-height:88vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; padding:80px 24px; position:relative; overflow:hidden;
-  background: radial-gradient(ellipse 1200px 700px at 50% 30%, rgba(37,211,102,0.07) 0%, transparent 70%),
-              radial-gradient(ellipse 600px 400px at 80% 80%, rgba(7,94,84,0.07) 0%, transparent 60%), var(--bg);
-}
-.hero-grid {
-  position:absolute; inset:0;
-  background-image: linear-gradient(rgba(37,211,102,0.04) 1px,transparent 1px), linear-gradient(90deg,rgba(37,211,102,0.04) 1px,transparent 1px);
-  background-size:60px 60px;
-  mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 0%,transparent 100%);
-}
-.hero-pill {
-  display:inline-flex; align-items:center; gap:8px;
-  background:rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.25);
-  padding:8px 18px; border-radius:100px; font-size:13px; font-weight:500; color:var(--wa-green);
-  margin-bottom:36px; position:relative; z-index:1;
-}
-.hero-pill::before { content:''; width:7px; height:7px; background:var(--wa-green); border-radius:50%; animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
-.hero h1 { font-size:clamp(38px,6vw,80px); font-weight:900; line-height:1.08; margin-bottom:12px; position:relative; z-index:1; color:#fff; letter-spacing:-2px; }
-.hero h1 span { background:linear-gradient(135deg,var(--wa-green) 0%,#34d399 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.hero-sub { font-size:clamp(15px,2vw,19px); color:var(--wa-muted); max-width:580px; line-height:1.7; margin-bottom:40px; position:relative; z-index:1; }
-.hero-meta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; position:relative; z-index:1; }
-.meta-tag { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid; }
-.m-g { background:rgba(37,211,102,0.08); color:var(--wa-green); border-color:rgba(37,211,102,0.2); }
-.m-b { background:rgba(96,165,250,0.08);  color:var(--blue);     border-color:rgba(96,165,250,0.2); }
-.m-p { background:rgba(167,139,250,0.08); color:var(--purple);   border-color:rgba(167,139,250,0.2); }
-.m-o { background:rgba(251,146,60,0.08);  color:var(--orange);   border-color:rgba(251,146,60,0.2); }
+  /* ---------- top bar ---------- */
+  .topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:16px;
+    background:var(--navy);color:#fff;padding:12px 24px;box-shadow:var(--shadow)}
+  .topbar .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+  .topbar .logo{height:34px;width:34px;border-radius:9px;background:var(--primary);
+    display:grid;place-items:center;color:var(--navy);font-weight:800}
+  .topbar .title{font-family:"Domine",serif;font-size:16px}
+  .topbar .sub{font-size:12px;opacity:.7;font-family:"Anek Latin"}
+  .topbar .spacer{flex:1}
+  .topbar .flowbtn{background:var(--primary);color:var(--navy);font-weight:700;border:none;
+    padding:10px 18px;border-radius:9px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:8px;
+    transition:transform .12s,box-shadow .12s}
+  .topbar .flowbtn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(252,147,105,.45)}
 
-/* ── NAV ── */
-.nav { position:sticky; top:0; z-index:200; background:rgba(6,11,20,0.92); backdrop-filter:blur(24px); border-bottom:1px solid var(--border); }
-.nav-inner { max-width:1400px; margin:0 auto; padding:0 24px; display:flex; align-items:center; overflow-x:auto; }
-.nav-logo { font-size:14px; font-weight:700; color:var(--wa-green); padding:16px 24px 16px 0; border-right:1px solid var(--border); margin-right:8px; white-space:nowrap; flex-shrink:0; }
-.nav-link { padding:16px 20px; font-size:13px; font-weight:500; color:var(--wa-muted); text-decoration:none; border-bottom:2px solid transparent; transition:all .2s; white-space:nowrap; }
-.nav-link:hover { color:var(--wa-green); border-bottom-color:rgba(37,211,102,0.4); }
+  /* ---------- layout ---------- */
+  .wrap{display:flex;max-width:1340px;margin:0 auto;gap:28px;padding:28px 24px 80px}
+  .docnav{position:sticky;top:78px;align-self:flex-start;width:240px;flex:none;
+    max-height:calc(100vh - 100px);overflow:auto;font-size:13.5px}
+  .docnav .grp{font-family:"Domine";text-transform:uppercase;letter-spacing:.05em;font-size:11px;
+    color:var(--muted-fg);margin:18px 0 6px;font-weight:700}
+  .docnav a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted-fg);margin:2px 0}
+  .docnav a:hover{background:var(--muted-bg);color:var(--fg)}
+  .docnav a.active{background:var(--primary);color:var(--primary-fg);font-weight:600}
+  .content{flex:1;min-width:0}
 
-/* ── SECTIONS ── */
-.page-section { padding:90px 24px; max-width:1400px; margin:0 auto; }
-.section-divider { border:none; height:1px; background:var(--border); max-width:1400px; margin:0 auto; }
-.sec-head { text-align:center; margin-bottom:64px; }
-.sec-tag { display:inline-block; padding:6px 14px; border-radius:100px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:18px; }
-.tag-g { background:rgba(37,211,102,0.1); color:var(--wa-green); border:1px solid rgba(37,211,102,0.2); }
-.tag-b { background:rgba(96,165,250,0.1);  color:var(--blue);    border:1px solid rgba(96,165,250,0.2); }
-.tag-p { background:rgba(167,139,250,0.1); color:var(--purple);  border:1px solid rgba(167,139,250,0.2); }
-.sec-title { font-size:clamp(24px,3.5vw,44px); font-weight:800; color:#fff; letter-spacing:-1px; margin-bottom:14px; }
-.sec-desc { font-size:16px; color:var(--wa-muted); max-width:560px; margin:0 auto; line-height:1.7; }
+  section{scroll-margin-top:84px;margin-bottom:46px}
+  .sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .sec-h h2{font-size:24px}
+  .sec-num{color:var(--primary-d);font-weight:700;font-family:"Domine"}
+  .lead{color:var(--muted-fg);margin:0 0 18px;max-width:74ch}
 
-/* ── USER JOURNEY ── */
-.journey-wrap { display:flex; align-items:flex-start; justify-content:center; flex-wrap:wrap; gap:0; }
-.journey-step { display:flex; flex-direction:column; align-items:center; text-align:center; width:150px; flex-shrink:0; }
-.journey-icon-wrap { position:relative; }
-.journey-icon {
-  width:72px; height:72px; border-radius:22px; display:flex; align-items:center; justify-content:center;
-  font-size:28px; border:2px solid; position:relative; z-index:1;
-  transition: transform .2s;
-}
-.journey-icon:hover { transform:scale(1.08); }
-.ji-g { background:rgba(37,211,102,0.1); border-color:rgba(37,211,102,0.3); }
-.ji-b { background:rgba(96,165,250,0.1);  border-color:rgba(96,165,250,0.3); }
-.ji-p { background:rgba(167,139,250,0.1); border-color:rgba(167,139,250,0.3); }
-.ji-o { background:rgba(251,146,60,0.1);  border-color:rgba(251,146,60,0.3); }
-.ji-t { background:rgba(20,184,166,0.1);  border-color:rgba(20,184,166,0.3); }
-.journey-num {
-  position:absolute; top:-8px; left:-8px; width:22px; height:22px;
-  border-radius:50%; background:var(--wa-green); color:#000;
-  font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center;
-  border:2px solid var(--bg); z-index:2;
-}
-.journey-label { font-size:13px; font-weight:700; color:#fff; margin-top:14px; margin-bottom:5px; }
-.journey-sub { font-size:11.5px; color:var(--wa-muted); line-height:1.55; }
-.journey-arrow {
-  display:flex; align-items:center; padding:0 4px; margin-top:28px; flex-shrink:0;
-}
-.j-arr {
-  display:flex; flex-direction:column; align-items:center; gap:3px;
-}
-.j-arr-line { width:36px; height:2px; background:linear-gradient(90deg,rgba(37,211,102,.2),rgba(37,211,102,.6)); position:relative; }
-.j-arr-line::after { content:''; position:absolute; right:-6px; top:-4px; border-left:8px solid rgba(37,211,102,.6); border-top:5px solid transparent; border-bottom:5px solid transparent; }
-.j-arr-label { font-size:9px; color:var(--wa-muted); font-weight:500; white-space:nowrap; }
+  /* ---------- hero ---------- */
+  .hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;
+    border-radius:18px;padding:34px 38px;margin-bottom:34px;position:relative;overflow:hidden}
+  .hero:after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;
+    background:radial-gradient(circle,rgba(252,147,105,.35),transparent 70%)}
+  .hero h1{font-size:30px;margin-bottom:8px}
+  .hero p{opacity:.85;max-width:70ch;margin:0}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+    padding:5px 12px;border-radius:99px;font-size:12.5px}
 
-/* Split arrows (two paths) */
-.journey-split { display:flex; flex-direction:column; align-items:center; gap:0; flex-shrink:0; padding:0 8px; margin-top:20px; }
-.j-split-line-v { width:2px; height:20px; background:rgba(37,211,102,.3); }
-.j-split-row { display:flex; gap:8px; align-items:center; }
-.j-split-line-h { width:20px; height:2px; background:rgba(37,211,102,.3); }
-.j-split-dot { width:6px; height:6px; border-radius:50%; background:rgba(37,211,102,.5); }
+  /* ---------- cards / notes ---------- */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+  .note{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--primary);
+    border-radius:12px;padding:18px 20px;margin-top:16px}
+  .note h4{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .note ul{margin:8px 0 0;padding-left:18px}
+  .note li{margin:5px 0}
+  .note.warn{border-left-color:#e0a13a}
+  .note.danger{border-left-color:#d96b6b}
+  .note.ok{border-left-color:#5aa86b}
 
-/* ── PHONE FRAME ── */
-.phone {
-  width:230px; height:490px; border-radius:38px; background:#000; border:6px solid #1c2836;
-  box-shadow: 0 0 0 1px #2a3a4a, 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05);
-  overflow:hidden; flex-shrink:0;
-}
-.phone-inner { display:flex; flex-direction:column; height:100%; }
-.sbar { background:#0a0f14; padding:6px 14px 4px; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:#e9edef; font-weight:600; flex-shrink:0; }
-.sbar-right { display:flex; gap:4px; align-items:center; }
-.wa-hdr { background:#1f2c34; padding:8px 10px; display:flex; align-items:center; gap:8px; flex-shrink:0; border-bottom:1px solid rgba(255,255,255,0.04); }
-.wa-back { font-size:14px; color:var(--wa-muted); }
-.wa-ava { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--wa-green),var(--wa-green-dark)); display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
-.wa-info { flex:1; }
-.wa-name { font-size:12px; font-weight:600; color:#e9edef; }
-.wa-status { font-size:10px; color:var(--wa-green); }
-.wa-hdr-ic { font-size:13px; color:var(--wa-muted); display:flex; gap:10px; }
-.wa-chat { flex:1; background:var(--wa-chat-bg); overflow-y:auto; padding:10px 8px; display:flex; flex-direction:column; gap:6px; }
-.msg { max-width:88%; padding:6px 9px 4px; border-radius:8px; font-size:11px; line-height:1.55; color:#e9edef; position:relative; word-break:break-word; }
-.msg.in  { background:var(--wa-incoming); align-self:flex-start; border-radius:0 8px 8px 8px; }
-.msg.out { background:var(--wa-outgoing); align-self:flex-end;   border-radius:8px 8px 0 8px; }
-.msg.err { background:#2d1515; border:1px solid rgba(248,113,113,0.25); align-self:flex-start; border-radius:0 8px 8px 8px; }
-.msg.suc { background:#0a2d1a; border:1px solid rgba(37,211,102,0.25); align-self:flex-start; border-radius:0 8px 8px 8px; }
-.msg-time { font-size:9px; color:var(--wa-muted); text-align:right; margin-top:3px; }
-.msg-check { color:#53bdeb; }
-.wa-btn-list { margin-top:6px; display:flex; flex-direction:column; gap:4px; }
-.wa-btn { background:rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.2); border-radius:6px; padding:6px 8px; font-size:10px; color:var(--wa-green); font-weight:500; }
-.wa-btn.sel { background:rgba(37,211,102,0.2); font-weight:700; }
-.wa-inp { background:#1f2c34; padding:6px 8px; display:flex; align-items:center; gap:6px; flex-shrink:0; }
-.wa-inp-field { flex:1; background:#2a3942; border-radius:18px; padding:6px 12px; font-size:10px; color:var(--wa-muted); }
-.wa-send { width:28px; height:28px; border-radius:50%; background:var(--wa-green); display:flex; align-items:center; justify-content:center; font-size:12px; }
-.date-chip { background:rgba(255,255,255,0.05); border-radius:100px; padding:3px 10px; font-size:9px; color:var(--wa-muted); text-align:center; margin:4px auto; width:fit-content; display:block; }
+  .frtag{display:inline-block;background:var(--navy);color:#fff;font-family:"JetBrains Mono";
+    font-size:10.5px;padding:2px 7px;border-radius:6px;margin-right:4px;vertical-align:middle}
+  .frtag.alt{background:var(--primary);color:var(--navy)}
 
-/* ── FILM STRIP ── */
-.film-strip { display:flex; align-items:flex-start; gap:0; overflow-x:auto; padding:16px 0 40px; -webkit-overflow-scrolling:touch; }
-.film-strip::-webkit-scrollbar { height:4px; }
-.film-step { display:flex; align-items:flex-start; flex-shrink:0; }
-.step-card { display:flex; flex-direction:column; align-items:center; gap:14px; width:252px; }
-.step-num { width:26px; height:26px; border-radius:50%; background:var(--wa-green); color:#000; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
-.step-num.e { background:var(--red); }
-.step-txt { text-align:center; font-size:12px; color:var(--wa-muted); line-height:1.5; max-width:200px; }
-.step-txt strong { display:block; font-size:13px; color:#fff; font-weight:600; margin-bottom:4px; }
-.connector { display:flex; align-items:center; padding:0 8px; padding-top:190px; flex-shrink:0; }
-.arr { width:44px; height:2px; background:linear-gradient(90deg,rgba(37,211,102,.3),rgba(37,211,102,.8)); position:relative; }
-.arr::after { content:''; position:absolute; right:-7px; top:-4px; border-left:9px solid rgba(37,211,102,.8); border-top:5px solid transparent; border-bottom:5px solid transparent; }
-.arr.r { background:linear-gradient(90deg,rgba(248,113,113,.3),rgba(248,113,113,.8)); }
-.arr.r::after { border-left-color:rgba(248,113,113,.8); }
-.flow-sep { border:none; height:1px; background:var(--border); margin:60px 0; }
-.flow-label { display:flex; align-items:center; gap:16px; margin-bottom:28px; }
-.flb { padding:5px 14px; border-radius:100px; font-size:12px; font-weight:600; }
-.flb.g { background:rgba(37,211,102,0.1); color:var(--wa-green); border:1px solid rgba(37,211,102,0.2); }
-.flb.r { background:rgba(248,113,113,0.1); color:var(--red);      border:1px solid rgba(248,113,113,0.2); }
-.flow-label-line { flex:1; height:1px; background:var(--border); }
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr}.docnav{display:none}}
 
-/* ── FLOW DIAGRAM ── */
-.fd-col { display:flex; flex-direction:column; align-items:center; gap:0; min-width:280px; max-width:320px; flex:1; }
-.fd-box { width:100%; padding:13px 16px; border-radius:14px; text-align:center; font-size:13px; font-weight:600; border:1px solid; }
-.fd-box.start  { background:rgba(37,211,102,.12); border-color:rgba(37,211,102,.4);  color:var(--wa-green); }
-.fd-box.menu   { background:rgba(96,165,250,.1);  border-color:rgba(96,165,250,.35); color:var(--blue); }
-.fd-box.action { background:var(--bg-card); border-color:var(--border); color:#e9edef; }
-.fd-box.decide { background:rgba(251,146,60,.08); border-color:rgba(251,146,60,.3);  color:var(--orange); }
-.fd-box.success{ background:rgba(37,211,102,.1);  border-color:rgba(37,211,102,.3);  color:var(--wa-green); }
-.fd-box.error  { background:rgba(248,113,113,.1); border-color:rgba(248,113,113,.3); color:var(--red); }
-.fd-box small  { display:block; font-size:11px; font-weight:400; opacity:.75; margin-top:3px; }
-.fd-arr { width:2px; height:28px; margin:0 auto; background:linear-gradient(180deg,rgba(37,211,102,.5),rgba(37,211,102,.15)); position:relative; }
-.fd-arr::after { content:''; position:absolute; bottom:-6px; left:-4px; border-top:7px solid rgba(37,211,102,.5); border-left:5px solid transparent; border-right:5px solid transparent; }
-.fd-arr.red { background:linear-gradient(180deg,rgba(248,113,113,.5),rgba(248,113,113,.15)); }
-.fd-arr.red::after { border-top-color:rgba(248,113,113,.5); }
-.fd-split-box { padding:10px 12px; border-radius:10px; text-align:center; font-size:12px; font-weight:600; width:100%; border:1px solid; }
-.fd-split-box.yes { background:rgba(37,211,102,.1); border-color:rgba(37,211,102,.3); color:var(--wa-green); }
-.fd-split-box.no  { background:rgba(248,113,113,.1); border-color:rgba(248,113,113,.3); color:var(--red); }
-.fd-split-arr { width:2px; height:20px; margin:0 auto; background:rgba(37,211,102,.4); position:relative; }
-.fd-split-arr::after { content:''; position:absolute; bottom:-5px; left:-4px; border-top:6px solid rgba(37,211,102,.4); border-left:5px solid transparent; border-right:5px solid transparent; }
-.fd-col-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:20px; padding:6px 16px; border-radius:100px; }
-.fd-col-title.g { background:rgba(37,211,102,.1); color:var(--wa-green); border:1px solid rgba(37,211,102,.2); }
-.fd-col-title.p { background:rgba(167,139,250,.1); color:var(--purple); border:1px solid rgba(167,139,250,.2); }
-.fd-divider { width:1px; background:var(--border); align-self:stretch; margin:0 10px; display:none; }
-@media (min-width:700px) { .fd-divider { display:block; } }
+  /* ---------- browser frame (mock) ---------- */
+  .browser{border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);background:#fff}
+  .browser .bar{display:flex;align-items:center;gap:8px;background:#eef3f4;border-bottom:1px solid var(--border);padding:9px 14px}
+  .dot{height:11px;width:11px;border-radius:50%}
+  .dot.r{background:#ec6a5e}.dot.y{background:#f4bf4f}.dot.g{background:#61c554}
+  .url{flex:1;background:#fff;border:1px solid var(--border);border-radius:7px;padding:4px 12px;
+    font-size:12px;color:var(--muted-fg);font-family:"JetBrains Mono"}
+  .tag-mock{font-size:10px;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.08em}
 
-/* ── FADE ── */
-.fade-up { opacity:0; transform:translateY(24px); transition:opacity .5s ease,transform .5s ease; }
-.fade-up.visible { opacity:1; transform:translateY(0); }
+  /* app shell inside frame */
+  .app{display:flex;min-height:380px;background:var(--bg)}
+  .sb{width:200px;flex:none;background:#fff;border-right:1px solid var(--border);padding:10px}
+  .sb .logo-row{display:flex;align-items:center;gap:8px;padding:6px 8px 12px;border-bottom:1px solid var(--border);margin-bottom:8px}
+  .sb .logo-sq{height:26px;width:26px;border-radius:7px;background:var(--primary);display:grid;place-items:center;color:#fff;font-size:13px}
+  .sb .logo-tx{font-weight:700;font-size:14px}
+  .nav-i{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;color:var(--muted-fg);font-size:13px;margin:1px 0;cursor:default}
+  .nav-i .ic{width:15px;text-align:center;opacity:.8}
+  .nav-i.active{background:var(--primary);color:#fff;font-weight:600}
+  .nav-i.child{font-size:12px;padding-left:24px}
+  .nav-i.child.active{background:rgba(252,147,105,.16);color:var(--primary-d)}
+  .nav-new{position:relative}
+  .nav-new:after{content:"NEW";position:absolute;right:8px;top:7px;background:var(--green-fg);color:#fff;
+    font-size:8px;padding:1px 5px;border-radius:5px;font-family:"Anek Latin";letter-spacing:.04em}
+  .appmain{flex:1;padding:18px;overflow:auto}
 
-@keyframes load { from{width:0} to{width:100%} }
+  .pg-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px}
+  .pg-head h3{font-size:19px}
+  .pg-head p{color:var(--muted-fg);font-size:12.5px;margin:2px 0 0}
+
+  .btn{border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;font-family:"Anek Latin"}
+  .btn-pri{background:var(--primary);color:#fff}
+  .btn-pri:hover{background:var(--primary-d)}
+  .btn-out{background:#fff;border:1px solid var(--input-border);color:var(--fg)}
+  .btn-out:hover{background:var(--muted-bg)}
+  .btn-ghost{background:transparent;color:var(--muted-fg)}
+  .btn-sm{padding:5px 10px;font-size:12px}
+  .btn-ico{padding:5px 8px;background:transparent;border:1px solid transparent;border-radius:7px;cursor:pointer;color:var(--muted-fg)}
+  .btn-ico:hover{background:var(--muted-bg);color:var(--fg)}
+
+  .filters{display:flex;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid var(--border);
+    border-radius:11px;padding:10px;margin-bottom:14px}
+  .sel,.inp{height:32px;border:1px solid var(--input-border);border-radius:7px;background:#fff;
+    padding:0 10px;font-size:12.5px;color:var(--fg);font-family:"Anek Latin"}
+  .inp{width:100%}
+  .sel{min-width:120px}
+
+  table.tbl{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:11px;overflow:hidden}
+  table.tbl th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg);
+    font-weight:600;padding:10px 12px;border-bottom:1px solid var(--border);background:#f6f9f9}
+  table.tbl td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+  table.tbl tr:last-child td{border-bottom:none}
+  table.tbl tbody tr:hover{background:#f7fafa}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:600;border:1px solid}
+  .b-gen{background:var(--gray-bg);color:var(--gray-fg);border-color:var(--gray-bd)}
+  .b-print{background:var(--blue-bg);color:var(--blue-fg);border-color:var(--blue-bd)}
+  .b-claim{background:var(--amber-bg);color:var(--amber-fg);border-color:var(--amber-bd)}
+  .b-redeem{background:var(--green-bg);color:var(--green-fg);border-color:var(--green-bd)}
+  .b-tvod{background:var(--purple-bg);color:var(--purple-fg);border-color:var(--purple-bd)}
+  .b-svod{background:var(--blue-bg);color:var(--blue-fg);border-color:var(--blue-bd)}
+  .b-pos{background:#ffe8db;color:var(--primary-d);border-color:#ffc9ad}
+
+  .codecell{display:inline-flex;align-items:center;gap:7px}
+  .codetxt{font-family:"JetBrains Mono";font-size:12.5px;letter-spacing:.02em}
+
+  .check{appearance:none;height:15px;width:15px;border:1.5px solid var(--input-border);border-radius:4px;cursor:pointer;position:relative;vertical-align:middle}
+  .check:checked{background:var(--primary);border-color:var(--primary)}
+  .check:checked:after{content:"✓";color:#fff;font-size:11px;position:absolute;left:2px;top:-2px}
+
+  /* dialog */
+  .ov{position:fixed;inset:0;background:rgba(15,34,46,.7);z-index:60;display:none;align-items:center;justify-content:center;padding:24px}
+  .ov.show{display:flex}
+  .dlg{background:#fff;border-radius:14px;max-width:480px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.3);overflow:hidden}
+  .dlg .h{padding:20px 22px 8px}
+  .dlg .h h3{font-size:18px}
+  .dlg .h p{color:var(--muted-fg);font-size:13px;margin:5px 0 0}
+  .dlg .bdy{padding:6px 22px 8px}
+  .dlg .ft{display:flex;justify-content:flex-end;gap:9px;padding:14px 22px 20px}
+  .field{margin:12px 0}
+  .field label{display:block;font-size:12.5px;font-weight:600;margin-bottom:5px}
+  .hint{font-size:11.5px;color:var(--muted-fg);margin-top:4px}
+  .infobox{background:#f0f6f6;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:12.5px;margin:10px 0}
+  .infobox.green{background:var(--green-bg);border-color:var(--green-bd);color:var(--green-fg)}
+  .infobox.amber{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber-fg)}
+
+  /* toast */
+  #toasts{position:fixed;right:20px;bottom:20px;z-index:80;display:flex;flex-direction:column;gap:10px}
+  .toast{min-width:280px;max-width:360px;background:#fff;border:1px solid var(--border);border-radius:11px;
+    box-shadow:0 12px 30px rgba(0,0,0,.18);padding:13px 15px;display:flex;gap:11px;align-items:flex-start;
+    animation:slidein .25s ease}
+  @keyframes slidein{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+  .toast .ti{height:22px;width:22px;border-radius:50%;display:grid;place-items:center;font-size:13px;flex:none;color:#fff}
+  .toast.ok .ti{background:var(--green-fg)} .toast.err .ti{background:var(--red-fg)} .toast.info .ti{background:var(--blue-fg)}
+  .toast .tt{font-weight:600;font-size:13.5px} .toast .td{font-size:12.5px;color:var(--muted-fg);margin-top:2px}
+
+  .demobar{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+
+  /* portal popup mock */
+  .portal-fr{background:var(--portal-bg);border-radius:12px;padding:26px;display:grid;place-items:center}
+  .ppop{background:var(--navy-2);color:#fff;border:1px solid rgba(255,255,255,.1);border-radius:14px;
+    padding:24px;max-width:380px;width:100%}
+  .ppop h4{font-size:18px;margin-bottom:6px}
+  .ppop .sub{color:rgba(255,255,255,.7);font-size:13px;margin-bottom:16px}
+  .ppop .row{display:flex;justify-content:space-between;gap:14px;font-size:13px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+  .ppop .row .k{color:rgba(255,255,255,.6)}
+  .ppop .cta{margin-top:18px;width:100%;background:linear-gradient(90deg,var(--portal-primary),#f57a48);
+    color:var(--navy);border:none;border-radius:9px;padding:11px;font-weight:700;cursor:pointer}
+
+  /* email mock */
+  .email{background:#f4f1ef;border-radius:12px;padding:18px;border:1px solid var(--border)}
+  .email .card-e{background:#fff;border-radius:10px;max-width:460px;margin:0 auto;overflow:hidden;box-shadow:var(--shadow)}
+  .email .hdr-e{background:var(--navy);height:64px;display:grid;place-items:center;color:#fff;font-family:"Domine"}
+  .email .bd-e{padding:22px}
+  .email .bd-e h4{font-size:16px;margin-bottom:12px}
+  .email .grey-e{background:#f6f7f7;border-radius:8px;padding:12px;margin:14px 0;font-size:13px}
+  .email .cta-e{display:inline-block;background:var(--navy);color:#fff;padding:11px 22px;border-radius:7px;font-weight:600;font-size:13px;margin:6px 0}
+  .email .ft-e{color:var(--muted-fg);font-size:12px;margin-top:14px}
+  .pdfchip{display:inline-flex;align-items:center;gap:7px;background:#fdecec;color:#b3261e;border:1px solid #f7c6c2;
+    padding:6px 11px;border-radius:8px;font-size:12px;margin-top:8px}
+
+  /* diagram modal */
+  .dmodal{position:fixed;inset:0;background:rgba(15,34,46,.93);z-index:70;display:none;flex-direction:column}
+  .dmodal.show{display:flex}
+  .dmodal .dhead{display:flex;align-items:center;gap:12px;padding:14px 22px;border-bottom:1px solid rgba(255,255,255,.12);color:#fff}
+  .dmodal .dhead h3{font-size:17px}
+  .dtabs{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+  .dtab{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.15);
+    padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;font-family:"Anek Latin"}
+  .dtab.active{background:var(--primary);color:var(--navy);border-color:var(--primary)}
+  .dclose{background:rgba(255,255,255,.12);color:#fff;border:none;height:36px;width:36px;border-radius:9px;cursor:pointer;font-size:18px}
+  .dbody{flex:1;overflow:auto;padding:26px;display:grid;place-items:start center}
+  .dpane{display:none;width:100%;max-width:1100px;background:#fff;border-radius:14px;padding:26px}
+  .dpane.active{display:block}
+  .dpane h4{font-size:18px;margin-bottom:6px;color:var(--navy)}
+  .dpane p.cap{color:var(--muted-fg);font-size:13px;margin:0 0 18px}
+  .mermaid{display:flex;justify-content:center}
+
+  .matrix{width:100%;border-collapse:collapse;font-size:13px}
+  .matrix th,.matrix td{border:1px solid var(--border);padding:9px 12px;text-align:center}
+  .matrix th{background:#f6f9f9;font-family:"Domine";font-size:12.5px}
+  .matrix td.lbl{text-align:left;font-weight:600;background:#fafcfc}
+  .yes{color:var(--green-fg);font-weight:700}.no{color:#bbb}
+
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+  .legend .li{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted-fg)}
+
+  .kbd{font-family:"JetBrains Mono";background:var(--muted-bg);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:12px}
+  .scope-out{opacity:.55}
+  .footer{text-align:center;color:var(--muted-fg);font-size:12.5px;padding:30px 0 10px}
 </style>
 </head>
 <body>
 
-<!-- ══ HERO ══ -->
-<section class="hero">
-  <div class="hero-grid"></div>
-  <div class="hero-pill">📱 Proposed Feature — v1.1</div>
-  <h1><span>Clix</span> WhatsApp<br>Magic Link Login</h1>
-  <p class="hero-sub">
-    Passwordless login for the Clix app — users tap once inside WhatsApp
-    and they're in. No password, no friction.
-  </p>
-  <div class="hero-meta">
-    <span class="meta-tag m-g">✓ One-tap Login</span>
-    <span class="meta-tag m-b">✓ Email OTP Linking</span>
-    <span class="meta-tag m-p">✓ Deep Link Support</span>
-    <span class="meta-tag m-o">✓ Secure &amp; Rate Limited</span>
-  </div>
-</section>
-
-<!-- ══ NAV ══ -->
-<nav class="nav">
-  <div class="nav-inner">
-    <div class="nav-logo">▶ Clix</div>
-    <a class="nav-link" href="#how-it-works">How It Works</a>
-    <a class="nav-link" href="#flow-diagram">Flow Diagram</a>
-    <a class="nav-link" href="#main-menu">Main Menu</a>
-    <a class="nav-link" href="#login-flow">Login Flow</a>
-    <a class="nav-link" href="#link-flow">Link Mobile</a>
-  </div>
-</nav>
-
-<!-- ══ HOW IT WORKS ══ -->
-<section id="how-it-works" class="page-section">
-  <div class="sec-head fade-up">
-    <div class="sec-tag tag-g">How It Works</div>
-    <h2 class="sec-title">Simple as Sending a Message</h2>
-    <p class="sec-desc">The entire login experience lives inside WhatsApp — no app switch, no password, no friction.</p>
-  </div>
-
-  <div class="journey-wrap fade-up">
-
-    <!-- Step 1 -->
-    <div class="journey-step">
-      <div class="journey-icon-wrap">
-        <div class="journey-icon ji-g">📱</div>
-        <div class="journey-num">1</div>
-      </div>
-      <div class="journey-label">Open WhatsApp</div>
-      <div class="journey-sub">User searches for the Clix Bot number</div>
-    </div>
-
-    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
-
-    <!-- Step 2 -->
-    <div class="journey-step">
-      <div class="journey-icon-wrap">
-        <div class="journey-icon ji-b">💬</div>
-        <div class="journey-num">2</div>
-      </div>
-      <div class="journey-label">Send a Message</div>
-      <div class="journey-sub">Say "Hi" — anything works to trigger the bot</div>
-    </div>
-
-    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
-
-    <!-- Step 3 -->
-    <div class="journey-step">
-      <div class="journey-icon-wrap">
-        <div class="journey-icon ji-p">🤖</div>
-        <div class="journey-num">3</div>
-      </div>
-      <div class="journey-label">Main Menu</div>
-      <div class="journey-sub">Clix Bot shows Login &amp; Link Mobile options</div>
-    </div>
-
-    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
-
-    <!-- Step 4 -->
-    <div class="journey-step">
-      <div class="journey-icon-wrap">
-        <div class="journey-icon ji-o">👆</div>
-        <div class="journey-num">4</div>
-      </div>
-      <div class="journey-label">User Chooses</div>
-      <div class="journey-sub">Login (existing) or Link Mobile (first time)</div>
-    </div>
-
-    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
-
-    <!-- Step 5 -->
-    <div class="journey-step">
-      <div class="journey-icon-wrap">
-        <div class="journey-icon ji-t">🔗</div>
-        <div class="journey-num">5</div>
-      </div>
-      <div class="journey-label">Magic Link / OTP</div>
-      <div class="journey-sub">Bot sends a secure link or email OTP to verify</div>
-    </div>
-
-    <div class="journey-arrow"><div class="j-arr"><div class="j-arr-line"></div></div></div>
-
-    <!-- Step 6 -->
-    <div class="journey-step">
-      <div class="journey-icon-wrap">
-        <div class="journey-icon ji-g">✅</div>
-        <div class="journey-num">6</div>
-      </div>
-      <div class="journey-label">In the App!</div>
-      <div class="journey-sub">Clix opens and the user is logged in — done</div>
-    </div>
-
-  </div>
-
-  <!-- Two-path callout -->
-  <div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:56px;" class="fade-up">
-    <div style="background:var(--bg-card);border:1px solid rgba(37,211,102,.2);border-radius:20px;padding:28px 32px;max-width:380px;flex:1;">
-      <div style="font-size:22px;margin-bottom:10px">🔐</div>
-      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:8px">Already a Clix user?</div>
-      <div style="font-size:14px;color:var(--wa-muted);line-height:1.65">If your WhatsApp number is already linked to your Clix account, just tap <strong style="color:var(--wa-green)">Login</strong> — you'll get a magic link and be in the app within seconds.</div>
-    </div>
-    <div style="background:var(--bg-card);border:1px solid rgba(167,139,250,.2);border-radius:20px;padding:28px 32px;max-width:380px;flex:1;">
-      <div style="font-size:22px;margin-bottom:10px">🔗</div>
-      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:8px">First time on WhatsApp?</div>
-      <div style="font-size:14px;color:var(--wa-muted);line-height:1.65">Tap <strong style="color:var(--purple)">Link Mobile with Email</strong>, enter your Clix email, verify with OTP — your number is linked and future logins take one tap.</div>
+<!-- ================= TOP BAR ================= -->
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">▶</div>
+    <div>
+      <div class="title">Chinmaya Clix</div>
+      <div class="sub">Coupon Card &amp; POS Redemption — Feature KT</div>
     </div>
   </div>
-</section>
+  <div class="spacer"></div>
+  <button class="flowbtn" onclick="openDiagrams()">🗺️ View Flowchart &amp; Diagrams</button>
+</div>
 
-<hr class="section-divider">
+<div class="wrap">
+  <!-- ============== DOC NAV ============== -->
+  <nav class="docnav" id="docnav">
+    <div class="grp">Concept</div>
+    <a href="#overview">Overview</a>
+    <a href="#lifecycle">Code lifecycle</a>
+    <a href="#roles">Roles &amp; access</a>
+    <div class="grp">Screens</div>
+    <a href="#s-menu">1 · POS menu + batch list</a>
+    <a href="#s-create">2 · Create batch</a>
+    <a href="#s-detail">3 · Batch detail &amp; codes</a>
+    <a href="#s-assign">4 · Assign to user</a>
+    <a href="#s-toasts">5 · Blocking &amp; toasts</a>
+    <a href="#s-orders">6 · Orders integration</a>
+    <a href="#s-recon">7 · Reconciliation</a>
+    <a href="#s-popup">8 · Customer popup</a>
+    <a href="#s-email">9 · Assignment emails</a>
+    <div class="grp">Reference</div>
+    <a href="#datamodel">Data model</a>
+    <a href="#edge">Edge cases &amp; rules</a>
+    <a href="#scope">Scope &amp; decisions</a>
+  </nav>
 
-<!-- ══ FLOW DIAGRAM ══ -->
-<section id="flow-diagram" class="page-section">
-  <div class="sec-head fade-up">
-    <div class="sec-tag tag-b">Complete Flow</div>
-    <h2 class="sec-title">End-to-End User Journey</h2>
-    <p class="sec-desc">Every path a user can take — from saying "Hi" to being fully logged in or linked.</p>
-  </div>
+  <!-- ============== CONTENT ============== -->
+  <main class="content">
 
-  <div style="display:flex;flex-direction:column;align-items:center;gap:0;margin-bottom:40px;" class="fade-up">
-    <div class="fd-box start" style="max-width:380px;width:100%;">💬 User opens WhatsApp &amp; sends "Hi"</div>
-    <div class="fd-arr"></div>
-    <div class="fd-box menu" style="max-width:380px;width:100%;">
-      🤖 Clix Bot — Main Menu<br>
-      <span style="font-size:12px;font-weight:400;opacity:.8">Login · Link Mobile with Email · Help · Contact Us</span>
-    </div>
-    <div style="display:flex;gap:120px;align-items:flex-start;flex-wrap:wrap;justify-content:center;width:100%;">
-      <div style="display:flex;flex-direction:column;align-items:center;"><div class="fd-arr"></div></div>
-      <div style="display:flex;flex-direction:column;align-items:center;"><div class="fd-arr"></div></div>
-    </div>
-  </div>
-
-  <div style="display:flex;gap:40px;justify-content:center;flex-wrap:wrap;" class="fade-up">
-
-    <!-- Login track -->
-    <div class="fd-col">
-      <div class="fd-col-title g">🔐 Login Flow</div>
-      <div class="fd-box action">User taps <strong>"Login to App"</strong></div>
-      <div class="fd-arr"></div>
-      <div class="fd-box decide">Mobile number registered in Clix?</div>
-      <div style="display:flex;gap:16px;width:100%;">
-        <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
-          <div class="fd-arr"></div>
-          <div class="fd-split-box yes">✓ YES</div>
-          <div class="fd-arr"></div>
-          <div class="fd-box action" style="font-size:12px;">🔗 Magic link sent<br><small>10 min expiry, single use</small></div>
-          <div class="fd-arr"></div>
-          <div class="fd-box decide" style="font-size:12px;">Clix app installed?</div>
-          <div style="display:flex;gap:10px;width:100%;">
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
-              <div class="fd-arr"></div>
-              <div class="fd-split-box yes" style="font-size:11px;">Opens App</div>
-              <div class="fd-arr"></div>
-              <div class="fd-box success" style="font-size:12px;">🎉 Logged In!</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
-              <div class="fd-arr red"></div>
-              <div class="fd-split-box no" style="font-size:11px;">Not installed</div>
-              <div class="fd-arr"></div>
-              <div class="fd-box action" style="font-size:11px;">App Store /<br>Play Store</div>
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
-          <div class="fd-arr red"></div>
-          <div class="fd-split-box no">✕ NO</div>
-          <div class="fd-arr red"></div>
-          <div class="fd-box error" style="font-size:12px;">❌ Not registered<br><small>Suggests Link Mobile option</small></div>
-          <div class="fd-arr"></div>
-          <div class="fd-box menu" style="font-size:12px;">Main Menu shown again</div>
-        </div>
+    <!-- HERO -->
+    <div class="hero">
+      <h1>Coupon Card &amp; Point-of-Sale Redemption</h1>
+      <p>A physical sales channel for Chinmaya Clix. Pre-generated, non-guessable cards unlock a mapped product
+         (a TVOD series or an SVOD plan). Cards are tracked end-to-end — <b>generated → printed → assigned →
+         redeemed</b> — so stock and revenue reconcile exactly. This page is the developer KT: every screen,
+         every case, and the full diagram set.</p>
+      <div class="pills">
+        <span class="pill">🆕 New CMS "POS" module</span>
+        <span class="pill">🔐 New POS role</span>
+        <span class="pill">🎟️ Batch + per-code lifecycle</span>
+        <span class="pill">📧 Email + invoice on assign</span>
+        <span class="pill">🍿 Auto-grant + portal popup</span>
+        <span class="pill">📊 Reconciliation in scope</span>
+        <span class="pill">₹ INR only · v1</span>
       </div>
     </div>
 
-    <div class="fd-divider"></div>
-
-    <!-- Link Mobile track -->
-    <div class="fd-col">
-      <div class="fd-col-title p">🔗 Link Mobile Flow</div>
-      <div class="fd-box action">User taps <strong>"Link Mobile with Email"</strong></div>
-      <div class="fd-arr"></div>
-      <div class="fd-box action">Bot asks for email address</div>
-      <div class="fd-arr"></div>
-      <div class="fd-box action">User enters their Clix email</div>
-      <div class="fd-arr"></div>
-      <div class="fd-box decide">Email found in Clix?</div>
-      <div style="display:flex;gap:16px;width:100%;">
-        <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
-          <div class="fd-arr"></div>
-          <div class="fd-split-box yes" style="font-size:11px;">✓ Found</div>
-          <div class="fd-arr"></div>
-          <div class="fd-box decide" style="font-size:11px;">Mobile already linked?</div>
-          <div style="display:flex;gap:8px;width:100%;">
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
-              <div class="fd-arr red"></div>
-              <div class="fd-split-box no" style="font-size:10px;">✕ Linked</div>
-              <div class="fd-arr red"></div>
-              <div class="fd-box error" style="font-size:11px;">❌ Mobile exists<br><small>Use Login instead</small></div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
-              <div class="fd-arr"></div>
-              <div class="fd-split-box yes" style="font-size:10px;">✓ Free</div>
-              <div class="fd-arr"></div>
-              <div class="fd-box action" style="font-size:11px;">📧 OTP sent to email</div>
-              <div class="fd-arr"></div>
-              <div class="fd-box action" style="font-size:11px;">User enters OTP</div>
-              <div class="fd-arr"></div>
-              <div class="fd-box success" style="font-size:11px;">✅ Linked!<br><small>Main menu shown again</small></div>
-            </div>
-          </div>
+    <!-- OVERVIEW -->
+    <section id="overview">
+      <div class="sec-h"><span class="sec-num">§1</span><h2>Overview</h2></div>
+      <p class="lead">Today Clix is online-only. Many devotees buy in person (Chinmaya Vani store, CCMT, events).
+        This feature lets staff sell Clix access over the counter: a card carries a unique code, an admin binds it
+        to the customer's email and the system raises an invoice, and the customer activates by simply signing in —
+        access unlocks automatically.</p>
+      <div class="grid2">
+        <div class="note ok">
+          <h4>🎯 What we are building (v1)</h4>
+          <ul>
+            <li>A new <b>POS</b> module in the CMS sidebar.</li>
+            <li><b>Batch generation</b> of N unique codes mapped to one series or plan.</li>
+            <li><b>Per-code</b> status list with mark-as-printed (multi-select).</li>
+            <li><b>Assign</b> a printed code to a customer email → invoice (INR) + email with PDF.</li>
+            <li><b>Auto-grant</b> access; <b>portal popup</b> notifies the customer (gifting pattern).</li>
+            <li><b>Orders</b> visibility + a <b>reconciliation</b> report with export.</li>
+            <li>A dedicated <b>POS role</b> limited to the POS page.</li>
+          </ul>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:0;">
-          <div class="fd-arr red"></div>
-          <div class="fd-split-box no" style="font-size:11px;">✕ Not found</div>
-          <div class="fd-arr red"></div>
-          <div class="fd-box error" style="font-size:12px;">❌ No account<br><small>Sign up in app first</small></div>
+        <div class="note">
+          <h4>🧱 Reuse — we are not starting from scratch</h4>
+          <ul>
+            <li><b>Gifting feature</b> is the reference pattern: email-bound recipients, <code>AWAITING_CLAIM → REDEEMED</code>,
+              idempotent row-locked fulfillment, invoice + receipt, the <code>GiftPopup</code>.</li>
+            <li><b>Entitlement</b>: same <code>create_purchase</code> / gift-subscription paths that grant access today.</li>
+            <li><b>Orders page</b> already lists gifts via a dedicated source — we add a "POS Card" source the same way.</li>
+            <li><b>Emails</b>: clone <code>send_gift_received_*</code> (Hari Om house style).</li>
+            <li><b>Toasts / errors</b>: <code>sonner</code> + <code>getApiErrorMessage</code>; block-rules like <code>check_block_rules</code>.</li>
+          </ul>
         </div>
       </div>
+    </section>
+
+    <!-- LIFECYCLE -->
+    <section id="lifecycle">
+      <div class="sec-h"><span class="sec-num">§2</span><h2>Code lifecycle (states)</h2></div>
+      <p class="lead">Simplified from the spec's 6 states. No <i>Allocated</i> (single store), no <i>Voided / Refunded / Expired</i> (out of scope for v1).
+        The one nuance: assigning to a <b>new</b> email parks the code at <b>Awaiting claim</b> until the customer registers; assigning to an
+        <b>existing</b> user grants access immediately (<b>Redeemed</b>).</p>
+      <div class="card" style="padding:22px">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:14px">
+          <span class="badge b-gen">Generated</span> <span>→</span>
+          <span class="badge b-print">Printed</span> <span>→</span>
+          <span class="badge b-claim">Assigned · Awaiting&nbsp;claim</span> <span>→</span>
+          <span class="badge b-redeem">Redeemed · Active</span>
+          <span style="color:var(--muted-fg);margin-left:8px">(existing user skips straight to Redeemed)</span>
+        </div>
+        <div class="legend" style="margin-top:16px">
+          <span class="li"><span class="badge b-gen">Generated</span> code created in a batch, not yet printed</span>
+          <span class="li"><span class="badge b-print">Printed</span> card printed &amp; verified — now assignable</span>
+          <span class="li"><span class="badge b-claim">Awaiting claim</span> bound to a not-yet-registered email</span>
+          <span class="li"><span class="badge b-redeem">Redeemed</span> access granted (terminal · irreversible)</span>
+        </div>
+      </div>
+      <div class="note"><h4>🔁 Why the split matters</h4>
+        Reconciliation (§7) explicitly watches <b>Printed − Assigned</b> (unsold stock) and <b>Assigned − Redeemed</b>
+        (paid but not yet activated). Collapsing the two assign states would hide the "paid but not activated" gap.
+        <span class="frtag">FR-7.3</span><span class="frtag">§8</span></div>
+    </section>
+
+    <!-- ROLES -->
+    <section id="roles">
+      <div class="sec-h"><span class="sec-num">§3</span><h2>Roles &amp; access</h2></div>
+      <p class="lead">A new <b>POS</b> role sees <i>only</i> the POS page and can create batches, generate codes and mark printed.
+        <b>Assigning</b> a code (binding to a customer, raising the invoice, granting access) is restricted to <b>Owner / Admin</b>.</p>
+      <div class="card" style="padding:6px 18px 18px">
+        <table class="matrix" style="margin-top:14px">
+          <tr><th style="text-align:left">Capability</th><th>POS</th><th>Owner / Content&nbsp;Admin</th><th>Other CMS roles</th></tr>
+          <tr><td class="lbl">See POS module</td><td class="yes">✔</td><td class="yes">✔</td><td class="no">—</td></tr>
+          <tr><td class="lbl">Create batch + generate codes</td><td class="yes">✔</td><td class="yes">✔</td><td class="no">—</td></tr>
+          <tr><td class="lbl">Mark codes printed</td><td class="yes">✔</td><td class="yes">✔</td><td class="no">—</td></tr>
+          <tr><td class="lbl">Assign code to user (+ invoice)</td><td class="no">—</td><td class="yes">✔</td><td class="no">—</td></tr>
+          <tr><td class="lbl">View Orders / Reconciliation</td><td class="no">—</td><td class="yes">✔</td><td class="no">view-only varies</td></tr>
+          <tr><td class="lbl">Rest of CMS (videos, users…)</td><td class="no">—</td><td class="yes">✔</td><td class="no">per role</td></tr>
+        </table>
+      </div>
+      <div class="note"><h4>🛠️ Implementation</h4>
+        New role in <code>SystemRoles</code> + a <code>PosPermissions</code> class (<code>pos.view</code>, <code>pos.create</code>, <code>pos.mark_printed</code>, <code>pos.assign</code>) in
+        <code>backend/app/models/role.py</code>; backend endpoints gated by <code>require_permission(...)</code>; frontend <code>usePosPermissions()</code> hook + sidebar gating.
+        <span class="frtag">FR-4.1</span><span class="frtag">NFR · access control</span>
+      </div>
+    </section>
+
+    <!-- SCREEN 1 -->
+    <section id="s-menu">
+      <div class="sec-h"><span class="sec-num">Screen 1</span><h2>POS menu &amp; batch list</h2></div>
+      <p class="lead">A new top-level <b>POS</b> item in the sidebar (with a "Create batch" button on the landing page).
+        The list shows every batch with its content, counts and progress.</p>
+      <div class="browser">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="url">clix-admin.chinmayamission.com/dashboard/pos</span><span class="tag-mock">CMS · mockup</span></div>
+        <div class="app">
+          <div class="sb">
+            <div class="logo-row"><div class="logo-sq">▶</div><div class="logo-tx">Chinmaya Clix</div></div>
+            <div class="nav-i"><span class="ic">▦</span> Dashboard</div>
+            <div class="nav-i"><span class="ic">▤</span> Content</div>
+            <div class="nav-i"><span class="ic">👥</span> Users</div>
+            <div class="nav-i"><span class="ic">＄</span> Monetization</div>
+            <div class="nav-i active nav-new"><span class="ic">🎟️</span> POS</div>
+            <div class="nav-i"><span class="ic">📊</span> Analytics</div>
+            <div class="nav-i"><span class="ic">❔</span> Support</div>
+            <div class="nav-i"><span class="ic">⚙</span> Settings</div>
+          </div>
+          <div class="appmain">
+            <div class="pg-head">
+              <div><h3>POS Coupon Cards</h3><p>Generate, print and assign physical card codes for counter sales</p></div>
+              <button class="btn btn-pri" onclick="toast('info','Mockup','This opens the Create Batch dialog (Screen 2).')">＋ Create Batch</button>
+            </div>
+            <div class="filters">
+              <select class="sel"><option>All products</option><option>TVOD series</option><option>SVOD plans</option></select>
+              <select class="sel"><option>Any status</option><option>Active</option><option>Fully assigned</option></select>
+              <input class="inp" style="max-width:200px" placeholder="Search batch / content…" />
+              <button class="btn btn-out btn-sm">🔍 Search</button>
+              <button class="btn btn-out btn-sm" style="margin-left:auto">⬇ Export</button>
+            </div>
+            <table class="tbl">
+              <thead><tr><th>Batch</th><th>Product</th><th>Type</th><th>Qty</th><th>Printed</th><th>Assigned</th><th>Redeemed</th><th>Created</th><th></th></tr></thead>
+              <tbody>
+                <tr><td><b>ASHTA</b><br/><span class="tag-mock">batch #B-1042</span></td><td>Ashtavakra Gita</td><td><span class="badge b-tvod">TVOD</span></td><td>50</td><td>50</td><td>31</td><td>27</td><td>02 Jun 2026</td><td><button class="btn btn-out btn-sm" onclick="location.hash='#s-detail'">View</button></td></tr>
+                <tr><td><b>GEETA</b><br/><span class="tag-mock">batch #B-1043</span></td><td>Bhagavad Geeta</td><td><span class="badge b-tvod">TVOD</span></td><td>100</td><td>60</td><td>22</td><td>18</td><td>05 Jun 2026</td><td><button class="btn btn-out btn-sm" onclick="location.hash='#s-detail'">View</button></td></tr>
+                <tr><td><b>GOLD</b><br/><span class="tag-mock">batch #B-1044</span></td><td>Gold Annual Membership</td><td><span class="badge b-svod">SVOD</span></td><td>25</td><td>25</td><td>9</td><td>7</td><td>10 Jun 2026</td><td><button class="btn btn-out btn-sm" onclick="location.hash='#s-detail'">View</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="note"><h4>📋 Requirements &amp; cases</h4>
+        <ul>
+          <li>Top-level <b>POS</b> sidebar item, visible only to POS + Owner/Admin. <span class="frtag">FR (roles)</span></li>
+          <li><b>Create Batch</b> button on the page header (opens Screen 2). <span class="frtag">FR-1.1</span></li>
+          <li>Each row shows lifecycle counts (<b>Qty / Printed / Assigned / Redeemed</b>) — a mini reconciliation glance. <span class="frtag">FR-7.1</span></li>
+          <li><b>Filter</b> by product/type/status, <b>search</b> by batch or content, <b>export</b>. <span class="frtag">FR-1.6</span><span class="frtag">FR-7.4</span></li>
+          <li>Batch label = the shared random <b>prefix</b> (e.g. <code>ASHTA</code>) printed on every card in the batch.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SCREEN 2 -->
+    <section id="s-create">
+      <div class="sec-h"><span class="sec-num">Screen 2</span><h2>Create batch</h2></div>
+      <p class="lead">Pick the product (one series or one plan), the quantity, and generate. Codes are minted as
+        <code>PREFIX-SUFFIX</code> — a random prefix shared by the whole batch + a unique random suffix per card. Price is
+        <b>not</b> stored here; it is read live from the catalog at assign time, in INR.</p>
+      <div class="browser">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="url">clix-admin.chinmayamission.com/dashboard/pos · Create Batch</span></div>
+        <div style="background:var(--bg);padding:26px;display:grid;place-items:center">
+          <div class="dlg" style="box-shadow:none;border:1px solid var(--border)">
+            <div class="h"><h3>Create new batch</h3><p>Generate a set of unique card codes for one product</p></div>
+            <div class="bdy">
+              <div class="field"><label>Product type</label>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-pri btn-sm">TVOD — Series</button>
+                  <button class="btn btn-out btn-sm">SVOD — Plan</button>
+                </div>
+              </div>
+              <div class="field"><label>Series</label>
+                <select class="sel" style="width:100%"><option>Ashtavakra Gita</option><option>Bhagavad Geeta</option></select>
+                <div class="hint">Only TVOD-enabled series are listed (reuses the gift-options endpoint).</div>
+              </div>
+              <div class="field"><label>Quantity of codes</label>
+                <input class="inp" value="50" />
+                <div class="hint">Batch size = the accountability target (50 codes = up to 50 sales). <span class="frtag">FR-1.5</span></div>
+              </div>
+              <div class="infobox">Codes will look like <code class="mono">ASHTA-7K2M9QXP</code> — random prefix (shared per batch) + random unique suffix. Price is read live at assign time · currency <b>INR</b>.</div>
+            </div>
+            <div class="ft"><button class="btn btn-out">Cancel</button>
+              <button class="btn btn-pri" onclick="toast('ok','Batch created','50 codes generated for “Ashtavakra Gita”.')">Generate 50 codes</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="note"><h4>📋 Requirements &amp; cases</h4>
+        <ul>
+          <li>One batch maps to exactly <b>one</b> product — a series <i>or</i> a plan. <span class="frtag">FR-1.2</span><span class="frtag">D1</span></li>
+          <li>Generate <b>N unique, non-guessable</b> codes in a single action; codes never reissued. <span class="frtag">FR-1.1</span><span class="frtag">FR-1.4</span></li>
+          <li>Code format = <code>RANDOMPREFIX-RANDOMSUFFIX</code>; prefix shared per batch, suffix unique per card. Collision-checked for global uniqueness. <span class="frtag">FR-6.2</span></li>
+          <li><b>No price field</b> — invoice uses the content's real-time catalog price (INR) at assign time.</li>
+          <li><b>No expiry</b> field in v1 (deliberately dropped). <span class="frtag">D3 ✗</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SCREEN 3 -->
+    <section id="s-detail">
+      <div class="sec-h"><span class="sec-num">Screen 3</span><h2>Batch detail &amp; code list</h2></div>
+      <p class="lead">All codes for a batch with their status. Codes are <b>masked</b> by default (reveal / copy on demand).
+        Select printed cards and <b>Mark printed</b> in bulk. Printed codes become assignable.</p>
+      <div class="browser">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="url">clix-admin.chinmayamission.com/dashboard/pos/B-1042</span></div>
+        <div style="background:var(--bg);padding:18px">
+          <div class="pg-head">
+            <div><h3>Batch ASHTA · Ashtavakra Gita <span class="badge b-tvod">TVOD</span></h3>
+              <p>50 codes · 50 printed · 31 assigned · 27 redeemed · ₹499 (live catalog price)</p></div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-out btn-sm" onclick="toast('ok','Marked printed','2 selected codes marked as printed.')">🖨 Mark printed (2)</button>
+              <button class="btn btn-out btn-sm">⬇ Export</button>
+            </div>
+          </div>
+          <div class="filters">
+            <select class="sel"><option>All statuses</option><option>Generated</option><option>Printed</option><option>Awaiting claim</option><option>Redeemed</option></select>
+            <input class="inp" style="max-width:220px" placeholder="Search code / email…" />
+          </div>
+          <table class="tbl">
+            <thead><tr><th style="width:34px"><input type="checkbox" class="check" disabled></th><th>Code</th><th>Status</th><th>Assigned to</th><th>Invoice</th><th>Printed</th><th></th></tr></thead>
+            <tbody>
+              <tr><td><input type="checkbox" class="check"></td>
+                <td><span class="codecell"><span class="codetxt" data-full="ASHTA-7K2M9QXP">ASHTA-••••••••</span>
+                  <button class="btn-ico" title="Reveal" onclick="reveal(this)">👁</button>
+                  <button class="btn-ico" title="Copy" onclick="copyCode(this)">⧉</button></span></td>
+                <td><span class="badge b-gen">Generated</span></td><td>—</td><td>—</td><td>—</td>
+                <td><span class="tag-mock">print first</span></td></tr>
+              <tr><td><input type="checkbox" class="check"></td>
+                <td><span class="codecell"><span class="codetxt" data-full="ASHTA-Q4WZ8N2R">ASHTA-••••••••</span>
+                  <button class="btn-ico" onclick="reveal(this)">👁</button>
+                  <button class="btn-ico" onclick="copyCode(this)">⧉</button></span></td>
+                <td><span class="badge b-print">Printed</span></td><td>—</td><td>—</td><td>02 Jun</td>
+                <td><button class="btn btn-pri btn-sm" onclick="openAssign()">Assign</button></td></tr>
+              <tr><td><input type="checkbox" class="check"></td>
+                <td><span class="codecell"><span class="codetxt" data-full="ASHTA-M5RPK9TW">ASHTA-••••••••</span>
+                  <button class="btn-ico" onclick="reveal(this)">👁</button>
+                  <button class="btn-ico" onclick="copyCode(this)">⧉</button></span></td>
+                <td><span class="badge b-claim">Awaiting claim</span></td><td>devotee@gmail.com</td><td>INV-7741</td><td>02 Jun</td>
+                <td><span class="tag-mock">awaiting claim</span></td></tr>
+              <tr><td><input type="checkbox" class="check" disabled></td>
+                <td><span class="codecell"><span class="codetxt" data-full="ASHTA-J2H8XQ4F">ASHTA-••••••••</span>
+                  <button class="btn-ico" onclick="reveal(this)">👁</button>
+                  <button class="btn-ico" onclick="copyCode(this)">⧉</button></span></td>
+                <td><span class="badge b-redeem">Redeemed</span></td><td>rama@yahoo.com</td><td>INV-7702</td><td>02 Jun</td>
+                <td><span class="tag-mock">locked</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="demobar">
+        <button class="btn btn-out btn-sm" onclick="copyCode(null,true)">Try: copy a code →</button>
+        <span class="hint">Reveal (👁) and copy (⧉) are live in this mockup.</span>
+      </div>
+      <div class="note"><h4>📋 Requirements &amp; cases</h4>
+        <ul>
+          <li><b>Mark printed: per-code, multi-select</b> — generate 50, mark any 10. Only printed codes are assignable. <span class="frtag">FR-2.2</span><span class="frtag">FR-2.3</span></li>
+          <li>Records printed <b>operator + date</b> per card (audit). <span class="frtag">FR-2.3</span><span class="frtag">NFR audit</span></li>
+          <li><b>Concealment</b>: codes masked by default; reveal/copy on click (sealed-card intent). <span class="frtag">FR-2.5</span><span class="frtag">D7</span></li>
+          <li>The <b>Assign</b> action only appears once a code is <b>Printed</b> — Generated codes show no action.</li>
+          <li>Once <b>assigned</b>, a code is bound to that customer and <b>cannot be reverted</b> (no edit / re-assign).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SCREEN 4 -->
+    <section id="s-assign">
+      <div class="sec-h"><span class="sec-num">Screen 4</span><h2>Assign to user (Owner/Admin only)</h2></div>
+      <p class="lead">Enter the customer's email. The system checks if they already exist. New users also provide a name and
+        (optional) mobile. On assign we raise an INR invoice at the live price, email it as a PDF, and either grant access now
+        (existing user) or park the code as <i>Awaiting claim</i> (new user).</p>
+      <div class="grid2">
+        <div>
+          <div class="browser">
+            <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">Assign · existing user</span></div>
+            <div style="background:var(--bg);padding:20px;display:grid;place-items:center">
+              <div class="dlg" style="box-shadow:none;border:1px solid var(--border);max-width:100%">
+                <div class="h"><h3>Assign code <span class="mono" style="font-size:13px">ASHTA-Q4WZ8N2R</span></h3><p>Bind this card to a customer and grant access</p></div>
+                <div class="bdy">
+                  <div class="field"><label>Customer email</label><input class="inp" value="rama@yahoo.com" /></div>
+                  <div class="infobox green">✔ Existing Clix user — access will be granted immediately and an invoice emailed.</div>
+                  <div class="infobox">Product: <b>Ashtavakra Gita</b> · Amount: <b>₹499</b> (live price) · Currency: INR</div>
+                </div>
+                <div class="ft"><button class="btn btn-out">Cancel</button>
+                  <button class="btn btn-pri" onclick="toast('ok','Access assigned','Granted to rama@yahoo.com · invoice INV-7745 emailed.')">Assign &amp; grant</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="browser">
+            <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">Assign · new user</span></div>
+            <div style="background:var(--bg);padding:20px;display:grid;place-items:center">
+              <div class="dlg" style="box-shadow:none;border:1px solid var(--border);max-width:100%">
+                <div class="h"><h3>Assign code <span class="mono" style="font-size:13px">ASHTA-Q4WZ8N2R</span></h3><p>Bind this card to a customer and grant access</p></div>
+                <div class="bdy">
+                  <div class="field"><label>Customer email</label><input class="inp" value="newdevotee@gmail.com" /></div>
+                  <div class="infobox amber">ⓘ No account yet — capture details. The user gets a sign-up email; access unlocks when they register.</div>
+                  <div class="field"><label>Full name</label><input class="inp" value="Anand Sharma" /></div>
+                  <div class="field"><label>Mobile <span class="hint">(optional)</span></label><input class="inp" value="+91 ·········" /></div>
+                </div>
+                <div class="ft"><button class="btn btn-out">Cancel</button>
+                  <button class="btn btn-pri" onclick="toast('ok','Code assigned','Awaiting claim — sign-up email sent to newdevotee@gmail.com.')">Assign &amp; email</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="note"><h4>📋 Requirements &amp; cases</h4>
+        <ul>
+          <li>Bind <b>code + customer email</b>; existing-user check on email. <span class="frtag">FR-4.2</span><span class="frtag">D2</span></li>
+          <li>New user → capture <b>name + optional mobile</b>, store pending binding, send sign-up/access email. <span class="frtag">FR-5.1</span></li>
+          <li>Generate <b>invoice (INR)</b> at the live catalog price, marked as a POS sale; email the <b>PDF</b>. <span class="frtag">FR-4.4</span><span class="frtag">D4</span></li>
+          <li><b>Concurrency-safe</b>: the card row is locked (<code>FOR UPDATE</code>) so two admins can't assign the same code. <span class="frtag">NFR reliability</span></li>
+          <li>Existing user → access <b>auto-granted</b> (create Purchase / gift-style subscription). New user → <b>Awaiting claim</b>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SCREEN 5 -->
+    <section id="s-toasts">
+      <div class="sec-h"><span class="sec-num">Screen 5</span><h2>Blocking &amp; toasts</h2></div>
+      <p class="lead">Every action confirms with a toast on success and explains on failure. The key block: a customer who
+        <b>already has access</b> to the content can't be assigned again — the backend returns a clear message that the toast surfaces.</p>
+      <div class="card" style="padding:20px">
+        <div class="demobar">
+          <button class="btn btn-pri" onclick="toast('ok','Access assigned','The user has been emailed.')">Success toast</button>
+          <button class="btn btn-out" onclick="toast('err','Cannot assign','This user already has access to this content.')">Block: already has access</button>
+          <button class="btn btn-out" onclick="toast('err','Cannot assign','This code must be marked printed before it can be assigned.')">Block: not printed</button>
+          <button class="btn btn-out" onclick="toast('err','Cannot assign','This code has already been assigned.')">Block: already assigned</button>
+          <button class="btn btn-out" onclick="toast('err','Invalid code','Invalid or unknown code.')">Invalid code</button>
+        </div>
+        <div class="hint" style="margin-top:12px">Click any button — toasts appear bottom-right, exactly as <code>sonner</code> renders them in the app.</div>
+      </div>
+      <div class="grid2" style="margin-top:16px">
+        <div class="note"><h4>🧩 Backend messages (<code>messages.py</code>)</h4>
+          <ul style="font-size:13px">
+            <li><code>CARD_RECIPIENT_ALREADY_HAS_ACCESS</code> — "This user already has access to this content."</li>
+            <li><code>CARD_ALREADY_ASSIGNED</code> — "This code has already been assigned."</li>
+            <li><code>CARD_NOT_PRINTED</code> — "…must be marked printed before it can be assigned."</li>
+            <li><code>CARD_INVALID_CODE</code> — "Invalid or unknown code."</li>
+          </ul>
+        </div>
+        <div class="note"><h4>🔎 How "already has access" is detected</h4>
+          <ul style="font-size:13px">
+            <li><b>TVOD</b>: existing completed <code>Purchase</code> for the series, or active plan that includes it.</li>
+            <li><b>SVOD</b>: active/trialing <code>Subscription</code>.</li>
+            <li>Mirrors gift <code>check_block_rules</code>; raised as <code>BadRequestError</code> → <code>{status:"error",code:400,message}</code>.</li>
+          </ul>
+          <span class="frtag">FR-4.5</span><span class="frtag">FR-5.4</span><span class="frtag">FR-6.3</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCREEN 6 -->
+    <section id="s-orders">
+      <div class="sec-h"><span class="sec-num">Screen 6</span><h2>Orders integration</h2></div>
+      <p class="lead">Each assigned card's invoice appears in the existing <b>Orders</b> page as its own <b>POS Card</b> type — so finance
+        sees the physical channel alongside online sales, and can download the PDF.</p>
+      <div class="browser">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="url">clix-admin.chinmayamission.com/dashboard/monetization/orders</span></div>
+        <div style="background:var(--bg);padding:18px">
+          <div class="pg-head"><div><h3>Orders</h3><p>All sales across channels</p></div>
+            <select class="sel"><option>All types</option><option>Subscriptions</option><option>Purchases</option><option>Gifts</option><option>POS Card</option></select></div>
+          <table class="tbl">
+            <thead><tr><th>Invoice #</th><th>Customer</th><th>Type</th><th>Item</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead>
+            <tbody>
+              <tr><td>INV-7745</td><td>rama@yahoo.com</td><td><span class="badge b-pos">POS Card</span></td><td>Ashtavakra Gita</td><td>₹499</td><td><span class="badge b-redeem">Redeemed</span></td><td>11 Jun 2026</td><td><button class="btn btn-out btn-sm">⬇ PDF</button></td></tr>
+              <tr><td>INV-7741</td><td>devotee@gmail.com</td><td><span class="badge b-pos">POS Card</span></td><td>Ashtavakra Gita</td><td>₹499</td><td><span class="badge b-claim">Awaiting claim</span></td><td>11 Jun 2026</td><td><button class="btn btn-out btn-sm">⬇ PDF</button></td></tr>
+              <tr><td>INV-7702</td><td>priya@gmail.com</td><td><span class="badge b-svod">SVOD</span></td><td>Gold · Monthly</td><td>₹299</td><td><span class="badge b-redeem">Active</span></td><td>10 Jun 2026</td><td><button class="btn btn-out btn-sm">⬇ PDF</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="note"><h4>📋 Requirements &amp; cases</h4>
+        <ul>
+          <li>Orders is a union of order entities (subscriptions / purchases / gifts) + invoice — <b>not</b> a raw invoice list. We add a 5th source: <b>POS card sales</b>. <span class="frtag">FR-7.2</span></li>
+          <li>New <b>"POS Card"</b> type filter isolates the counter channel for finance.</li>
+          <li>Invoice <b>PDF download</b> reuses the existing <code>/admin/invoices/{id}/download</code> endpoint — works once the row carries <code>invoice_id</code>.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SCREEN 7 -->
+    <section id="s-recon">
+      <div class="sec-h"><span class="sec-num">Screen 7</span><h2>Reconciliation report</h2></div>
+      <p class="lead">Per-batch lifecycle counts + the two watched gaps: <b>Printed − Assigned</b> (unsold stock) and
+        <b>Assigned − Redeemed</b> (paid but not activated). Exportable for accounting.</p>
+      <div class="browser">
+        <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="url">clix-admin.chinmayamission.com/dashboard/pos/reconciliation</span></div>
+        <div style="background:var(--bg);padding:18px">
+          <div class="pg-head"><div><h3>POS Reconciliation</h3><p>Codes generated → printed → assigned → redeemed → revenue</p></div>
+            <button class="btn btn-out btn-sm">⬇ Export CSV</button></div>
+          <table class="tbl">
+            <thead><tr><th>Batch</th><th>Product</th><th>Generated</th><th>Printed</th><th>Assigned</th><th>Redeemed</th><th>Unsold (P−A)</th><th>Pending (A−R)</th><th>Revenue</th></tr></thead>
+            <tbody>
+              <tr><td>ASHTA</td><td>Ashtavakra Gita</td><td>50</td><td>50</td><td>31</td><td>27</td><td><b style="color:var(--amber-fg)">19</b></td><td><b style="color:var(--blue-fg)">4</b></td><td>₹15,469</td></tr>
+              <tr><td>GEETA</td><td>Bhagavad Geeta</td><td>100</td><td>60</td><td>22</td><td>18</td><td><b style="color:var(--amber-fg)">38</b></td><td><b style="color:var(--blue-fg)">4</b></td><td>₹10,978</td></tr>
+              <tr><td>GOLD</td><td>Gold Annual</td><td>25</td><td>25</td><td>9</td><td>7</td><td><b style="color:var(--amber-fg)">16</b></td><td><b style="color:var(--blue-fg)">2</b></td><td>₹26,991</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="note"><h4>📋 Requirements &amp; cases</h4>
+        <ul>
+          <li>Lifecycle counts per batch/product. <span class="frtag">FR-7.1</span></li>
+          <li>Sales report rows: code, customer email, amount, assigning admin, date. <span class="frtag">FR-7.2</span></li>
+          <li><b>Printed − Assigned</b> = unsold stock at POS; <b>Assigned − Redeemed</b> = paid-but-not-activated (follow-up). <span class="frtag">FR-7.3</span><span class="frtag">§8</span></li>
+          <li>Revenue = sum of assigned-code invoices. Export for accounting. <span class="frtag">FR-7.4</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SCREEN 8 -->
+    <section id="s-popup">
+      <div class="sec-h"><span class="sec-num">Screen 8</span><h2>Customer popup (portal)</h2></div>
+      <p class="lead">No in-app code entry. Access is auto-granted; on the customer's next portal session a popup announces it —
+        the exact <code>GiftPopup</code> mechanism (unseen flag → show once → mark seen).</p>
+      <div class="portal-fr">
+        <div class="ppop">
+          <h4>🎉 You now have access!</h4>
+          <div class="sub">Your Chinmaya Clix card has been activated.</div>
+          <div class="row"><span class="k">Title</span><span>Ashtavakra Gita</span></div>
+          <div class="row"><span class="k">Access</span><span>Unlimited lifetime</span></div>
+          <button class="cta" onclick="toast('ok','Enjoy 🙏','Marked seen — opens the title.')">Watch now</button>
+        </div>
+      </div>
+      <div class="note"><h4>📋 Requirements &amp; cases</h4>
+        <ul>
+          <li>Driven by an <b>unseen flag</b> (<code>seen_by_recipient_at</code>), shown on next login/focus, then marked seen — never repeats. <span class="frtag">FR-5.3</span></li>
+          <li>Clone of <code>frontend/src/components/portal/gift-popup.tsx</code> → <code>PosCardPopup</code> with adjusted copy.</li>
+          <li>Includes a <b>Watch now / Start watching</b> deep-link to the unlocked content.</li>
+          <li>If the user is mid-session at assign time, it surfaces on their next focus/login (not instantly) — same as gifting.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- SCREEN 9 -->
+    <section id="s-email">
+      <div class="sec-h"><span class="sec-num">Screen 9</span><h2>Assignment emails</h2></div>
+      <p class="lead">House style: <b>Hari Om</b> greeting, Clix header, navy CTA, "The Chinmaya Clix Team". Plain Clix sender (no named person).
+        Two branches — existing user (access ready) vs new user (sign up to claim) — plus the invoice PDF.</p>
+      <div class="grid2">
+        <div class="email">
+          <div class="card-e">
+            <div class="hdr-e">Chinmaya Clix</div>
+            <div class="bd-e">
+              <h4>You now have access 🎉</h4>
+              <p style="font-size:13px">Hari Om Rama,</p>
+              <p style="font-size:13px">You now have access to <b>Ashtavakra Gita</b> on Chinmaya Clix. It's ready to enjoy.</p>
+              <div class="grey-e"><b>Title:</b> Ashtavakra Gita<br/><b>Access:</b> Unlimited lifetime</div>
+              <a class="cta-e">Watch Now</a>
+              <div class="pdfchip">📄 Invoice_INV-7745.pdf</div>
+              <div class="ft-e">Enjoy!<br/>The Chinmaya Clix Team</div>
+            </div>
+          </div>
+          <div class="tag-mock" style="text-align:center;margin-top:8px">Existing user · access granted</div>
+        </div>
+        <div class="email">
+          <div class="card-e">
+            <div class="hdr-e">Chinmaya Clix</div>
+            <div class="bd-e">
+              <h4>Your Clix access is waiting</h4>
+              <p style="font-size:13px">Hari Om Anand,</p>
+              <p style="font-size:13px">You've been given access to <b>Ashtavakra Gita</b>. Sign up with this email address to claim it.</p>
+              <div class="grey-e"><b>Title:</b> Ashtavakra Gita<br/><b>Access:</b> Unlimited lifetime</div>
+              <a class="cta-e">Sign up to claim access</a>
+              <div class="ft-e">See you soon!<br/>The Chinmaya Clix Team</div>
+            </div>
+          </div>
+          <div class="tag-mock" style="text-align:center;margin-top:8px">New user · sign-up CTA</div>
+        </div>
+      </div>
+      <div class="note"><h4>📋 Requirements &amp; cases</h4>
+        <ul>
+          <li>New methods <code>send_code_assigned_tvod</code> / <code>send_code_assigned_svod</code> mirroring <code>send_gift_received_*</code>.</li>
+          <li>Branch on registered vs unregistered (Watch Now vs Sign up to claim). <span class="frtag">FR-4.6</span><span class="frtag">FR-5.1</span></li>
+          <li>Existing-user mail attaches the <b>invoice PDF</b>. AWS SES via <code>email_service</code>.</li>
+          <li>Plain Chinmaya Clix sender; no named person, no point-of-sale mention.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- DATA MODEL -->
+    <section id="datamodel">
+      <div class="sec-h"><span class="sec-num">§4</span><h2>Data model</h2></div>
+      <p class="lead">Two new tables — <code>card_batch</code> and <code>card</code> — plus links to the existing <code>invoice</code>,
+        <code>purchase</code> and <code>subscription</code> rows the card fulfils. (Full ER diagram is in <b>View Flowchart &amp; Diagrams</b>.)</p>
+      <div class="grid2">
+        <div class="note"><h4>🗃️ card_batch</h4>
+          <ul style="font-size:13px">
+            <li><code>id, organization_id</code></li>
+            <li><code>product_type</code> tvod | svod</li>
+            <li><code>content_id</code> (series) / <code>plan_id</code></li>
+            <li><code>prefix</code> — random, shared per batch</li>
+            <li><code>quantity, currency='INR'</code></li>
+            <li><code>created_at, created_by</code></li>
+          </ul>
+        </div>
+        <div class="note"><h4>🎟️ card</h4>
+          <ul style="font-size:13px">
+            <li><code>id, batch_id</code></li>
+            <li><code>code</code> — <code>PREFIX-SUFFIX</code>, globally unique</li>
+            <li><code>status</code> generated | printed | awaiting_claim | redeemed</li>
+            <li><code>assigned_email, assigned_user_id, recipient_name, recipient_mobile</code></li>
+            <li><code>invoice_id, fulfilled_purchase_id, fulfilled_subscription_id</code></li>
+            <li>audit: <code>printed_at/by, assigned_at/by, redeemed_at, seen_by_recipient_at</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- EDGE CASES -->
+    <section id="edge">
+      <div class="sec-h"><span class="sec-num">§5</span><h2>Edge cases &amp; business rules</h2></div>
+      <div class="grid2">
+        <div class="note ok"><h4>✔ Handled</h4>
+          <ul>
+            <li>Duplicate-assign on a sold code → blocked + clear toast. <span class="frtag">FR-4.5</span></li>
+            <li>Customer already owns the product → blocked. <span class="frtag">FR-6.3</span></li>
+            <li>Concurrent assign of one code → row lock, no double-sell. <span class="frtag">NFR</span></li>
+            <li>Once assigned, the binding is irreversible — no edit / re-assign.</li>
+            <li>Globally-unique, non-guessable codes (collision-checked). <span class="frtag">FR-1.4</span><span class="frtag">FR-6.2</span></li>
+            <li>Product mismatch impossible — a code unlocks only its mapped product. <span class="frtag">FR-6.3</span></li>
+          </ul>
+        </div>
+        <div class="note warn"><h4>⚠ Notes / trade-offs</h4>
+          <ul>
+            <li>Codes stored <b>plain</b> (not hashed) — they must be displayed/printed. <span class="frtag">NFR</span></li>
+            <li>"Staff" in reports = the <b>Owner/Admin who assigned</b> (assign is admin-only, not counter POS).</li>
+            <li>Email <b>mismatch</b> handled by binding — only the bound email's account receives access.</li>
+            <li>Print step = checkbox + simple confirm (not a multi-item checklist).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCOPE -->
+    <section id="scope">
+      <div class="sec-h"><span class="sec-num">§6</span><h2>Scope &amp; locked decisions (v1)</h2></div>
+      <div class="grid2">
+        <div class="note ok"><h4>✅ In scope</h4>
+          <ul>
+            <li>POS module + new POS role</li>
+            <li>Batch create / generate / per-code list</li>
+            <li>Mark printed (multi-select) + code concealment</li>
+            <li>Assign → INR invoice (live price) + email PDF</li>
+            <li>Auto-grant + portal popup</li>
+            <li>Orders integration + reconciliation/export</li>
+          </ul>
+        </div>
+        <div class="note danger"><h4>🚫 Out of scope (v1)</h4>
+          <ul class="scope-out" style="opacity:1">
+            <li>Expiry / validity window <span class="frtag">D3</span></li>
+            <li>POS-location stock allocation (single store) <span class="frtag">FR-3</span></li>
+            <li>Refund / void / damaged-card reprint <span class="frtag">FR-2.4</span><span class="frtag">D5</span></li>
+            <li>Multi-currency (INR only)</li>
+            <li>Payment mode + free-text notes <span class="frtag">FR-4.3</span></li>
+            <li>Counter POS staff doing the sale (Admin assigns)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      Chinmaya Clix · Coupon Card &amp; POS Redemption — Feature KT · generated for developer hand-off ·
+      reference spec “Clix Docs, June 2026”.<br/>Use <b>🗺️ View Flowchart &amp; Diagrams</b> (top-right) for the end-to-end flow, state machine, sequence, ER and RBAC.
     </div>
+  </main>
+</div>
 
-  </div>
-</section>
-
-<hr class="section-divider">
-
-<!-- ══ MAIN MENU ══ -->
-<section id="main-menu" class="page-section">
-  <div class="sec-head fade-up">
-    <div class="sec-tag tag-g">Entry Point</div>
-    <h2 class="sec-title">Main Menu</h2>
-    <p class="sec-desc">Every interaction starts here. The user sends any message and Clix Bot immediately shows all options — Login and Link Mobile are both visible from the start.</p>
-  </div>
-
-  <div style="display:flex;justify-content:center;gap:64px;align-items:flex-start;flex-wrap:wrap;" class="fade-up">
-
-    <div class="step-card">
-      <div class="step-num">1</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:41</span><div class="sbar-right"><span>●●●●</span><span>WiFi</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>📞</span><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg out">Hi 👋<div class="msg-time">9:41 <span class="msg-check">✓✓</span></div></div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>User sends "Hi"</strong>Any message triggers the welcome flow</div>
+<!-- ============== ASSIGN DEMO DIALOG ============== -->
+<div class="ov" id="assignOv">
+  <div class="dlg">
+    <div class="h"><h3>Assign code <span class="mono" style="font-size:13px">ASHTA-Q4WZ8N2R</span></h3><p>Bind this card to a customer and grant access</p></div>
+    <div class="bdy">
+      <div class="field"><label>Customer email</label><input class="inp" id="assignEmail" placeholder="customer@email.com" value="rama@yahoo.com" /></div>
+      <div class="infobox green">✔ Existing Clix user — access granted immediately, invoice emailed.</div>
+      <div class="infobox">Product: <b>Ashtavakra Gita</b> · Amount: <b>₹499</b> (live price) · INR</div>
     </div>
+    <div class="ft"><button class="btn btn-out" onclick="closeAssign()">Cancel</button>
+      <button class="btn btn-pri" onclick="closeAssign();toast('ok','Access assigned','Granted · invoice INV-7745 emailed.')">Assign &amp; grant</button></div>
+  </div>
+</div>
 
-    <div class="connector"><div class="arr"></div></div>
-
-    <div class="step-card">
-      <div class="step-num">2</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:41</span><div class="sbar-right"><span>●●●●</span><span>WiFi</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>📞</span><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg out">Hi 👋<div class="msg-time">9:41 <span class="msg-check">✓✓</span></div></div>
-          <div class="msg in">
-            <strong style="color:#25D366">Welcome to Clix! 👋</strong><br><br>
-            How can we help you today?<br>Please choose an option:
-            <div class="wa-btn-list">
-              <div class="wa-btn">1. 🔐 Login to App</div>
-              <div class="wa-btn">2. 🔗 Link Mobile with Email</div>
-              <div class="wa-btn">3. ❓ Help &amp; Support</div>
-              <div class="wa-btn">4. 📞 Contact Us</div>
-            </div>
-            <div class="msg-time">9:41</div>
-          </div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>Clix Bot shows main menu</strong>Login &amp; Link Mobile visible from the start</div>
+<!-- ============== DIAGRAM MODAL ============== -->
+<div class="dmodal" id="dmodal">
+  <div class="dhead">
+    <h3 style="font-family:Domine;margin-right:6px">Flows &amp; Diagrams</h3>
+    <div class="dtabs">
+      <button class="dtab active" data-pane="p-flow" onclick="showPane(this)">End-to-end flow</button>
+      <button class="dtab" data-pane="p-state" onclick="showPane(this)">State machine</button>
+      <button class="dtab" data-pane="p-seq" onclick="showPane(this)">Assign sequence</button>
+      <button class="dtab" data-pane="p-er" onclick="showPane(this)">Data model (ER)</button>
+      <button class="dtab" data-pane="p-rbac" onclick="showPane(this)">RBAC matrix</button>
     </div>
-
+    <button class="dclose" onclick="closeDiagrams()">✕</button>
   </div>
-</section>
-
-<hr class="section-divider">
-
-<!-- ══ LOGIN FLOW ══ -->
-<section id="login-flow" class="page-section">
-  <div class="sec-head fade-up">
-    <div class="sec-tag tag-b">Flow 1 — Login</div>
-    <h2 class="sec-title">Login via Magic Link</h2>
-    <p class="sec-desc">For users whose WhatsApp number is already linked to a Clix account. One tap, one link, logged in.</p>
+  <div class="dbody">
+    <div class="dpane active" id="p-flow">
+      <h4>End-to-end flow</h4><p class="cap">Generate → Print → Assign → (auto-grant / claim) → Redeem → Reconcile.</p>
+      <pre class="mermaid">
+flowchart TD
+  A["POS/Admin: Create Batch<br/>map to Series or Plan, qty N"] --> B["Generate N codes<br/>PREFIX-SUFFIX (random)"]
+  B --> C["Mark Printed<br/>per-code, multi-select"]
+  C --> D["Owner/Admin: Assign<br/>enter customer email"]
+  D --> E{"User exists?"}
+  E -- "No" --> G["Capture name + mobile(opt)<br/>store pending binding"]
+  G --> I["Email: sign up to claim"]
+  I --> L["Status: Awaiting claim"]
+  L --> M["Customer registers<br/>with that email"]
+  M --> F
+  E -- "Yes" --> F{"Already has<br/>access?"}
+  F -- "Yes" --> X["BLOCK + toast:<br/>'User already has this access'"]
+  F -- "No" --> H["Grant access now<br/>create Purchase / Subscription"]
+  H --> J["Create INR invoice (live price)<br/>email PDF receipt"]
+  J --> K["Status: Redeemed / Active"]
+  K --> N["Portal popup next login:<br/>'You now have access'"]
+  K --> O["Appears in Orders + Reconciliation"]
+  classDef block fill:#fee2e2,stroke:#b91c1c,color:#b91c1c;
+  classDef ok fill:#dcfce7,stroke:#15803d,color:#15803d;
+  class X block; class K,O ok;
+      </pre>
+    </div>
+    <div class="dpane" id="p-state">
+      <h4>Code state machine</h4><p class="cap">No Allocated / Void / Expired in v1. Awaiting-claim is editable; Redeemed is terminal.</p>
+      <pre class="mermaid">
+stateDiagram-v2
+  [*] --> Generated
+  Generated --> Printed: mark printed (per-code)
+  Printed --> AwaitingClaim: assign to NEW email
+  Printed --> Redeemed: assign to EXISTING user (auto-grant)
+  AwaitingClaim --> Redeemed: user registers + access granted
+  Redeemed --> [*]
+  note right of AwaitingClaim
+    Bound to email - awaiting registration
+  end note
+  note right of Redeemed
+    Terminal - irreversible
+  end note
+      </pre>
+    </div>
+    <div class="dpane" id="p-seq">
+      <h4>Assign sequence</h4><p class="cap">Row-locked, idempotent — mirrors gift fulfillment. Blocks if the user already owns the product.</p>
+      <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  actor A as Admin
+  participant UI as CMS POS Page
+  participant API as Backend API
+  participant DB as Database
+  participant M as Email (SES)
+  actor C as Customer
+  A->>UI: Enter code + email, click Assign
+  UI->>API: POST /pos/cards/{id}/assign {email}
+  API->>DB: SELECT card ... FOR UPDATE (lock)
+  API->>DB: lookup user by email
+  alt user exists AND already owns content
+    API-->>UI: 400 "User already has this access"
+    UI-->>A: error toast
+  else OK
+    alt existing user
+      API->>DB: create Purchase / Subscription (grant)
+      API->>DB: create INR invoice (live price)
+      API->>M: access email + invoice PDF
+      API->>DB: status = Redeemed
+    else new user
+      API->>DB: status = Awaiting claim
+      API->>M: sign-up + access email
+    end
+    API-->>UI: 200 success
+    UI-->>A: success toast
+  end
+  C->>API: register / login (if new)
+  API->>DB: claim binding -> grant access
+  C->>API: next portal visit
+  API-->>C: popup "You now have access"
+      </pre>
+    </div>
+    <div class="dpane" id="p-er">
+      <h4>Data model (ER)</h4><p class="cap">New: card_batch, card. Reused: invoice, purchase, subscription, users.</p>
+      <pre class="mermaid">
+erDiagram
+  CARD_BATCH ||--o{ CARD : contains
+  USER ||--o{ CARD : "assigned to"
+  CARD ||--o| INVOICE : generates
+  CARD ||--o| PURCHASE : "grants (TVOD)"
+  CARD ||--o| SUBSCRIPTION : "grants (SVOD)"
+  CARD_BATCH {
+    uuid id
+    uuid organization_id
+    string product_type "tvod|svod"
+    uuid content_id "series"
+    uuid plan_id "plan"
+    string prefix "random, per batch"
+    int quantity
+    string currency "INR"
+    uuid created_by
+  }
+  CARD {
+    uuid id
+    uuid batch_id
+    string code "PREFIX-SUFFIX unique"
+    string status "generated|printed|awaiting_claim|redeemed"
+    string assigned_email
+    uuid assigned_user_id
+    string recipient_name
+    string recipient_mobile
+    uuid invoice_id
+    uuid fulfilled_purchase_id
+    uuid fulfilled_subscription_id
+    datetime printed_at
+    datetime assigned_at
+    datetime redeemed_at
+    datetime seen_by_recipient_at
+  }
+      </pre>
+    </div>
+    <div class="dpane" id="p-rbac">
+      <h4>RBAC matrix</h4><p class="cap">POS role is scoped to the POS module; assign stays with Owner/Admin.</p>
+      <table class="matrix">
+        <tr><th style="text-align:left">Capability</th><th>POS</th><th>Owner / Admin</th><th>Other roles</th></tr>
+        <tr><td class="lbl">See POS module</td><td class="yes">✔</td><td class="yes">✔</td><td class="no">—</td></tr>
+        <tr><td class="lbl">Create batch + generate</td><td class="yes">✔</td><td class="yes">✔</td><td class="no">—</td></tr>
+        <tr><td class="lbl">Mark printed</td><td class="yes">✔</td><td class="yes">✔</td><td class="no">—</td></tr>
+        <tr><td class="lbl">Assign (+ invoice + grant)</td><td class="no">—</td><td class="yes">✔</td><td class="no">—</td></tr>
+        <tr><td class="lbl">Orders / Reconciliation</td><td class="no">—</td><td class="yes">✔</td><td class="no">varies</td></tr>
+      </table>
+    </div>
   </div>
+</div>
 
-  <!-- Happy Path -->
-  <div class="flow-label fade-up">
-    <div class="flb g">✓ Happy Path — Registered User</div>
-    <div class="flow-label-line"></div>
-  </div>
-
-  <div class="film-strip fade-up">
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">1</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:41</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg in">
-            <strong style="color:#25D366">Welcome to Clix! 👋</strong><br><br>Please choose:
-            <div class="wa-btn-list">
-              <div class="wa-btn sel">1. 🔐 Login to App</div>
-              <div class="wa-btn">2. 🔗 Link Mobile with Email</div>
-              <div class="wa-btn">3. ❓ Help &amp; Support</div>
-            </div>
-            <div class="msg-time">9:41</div>
-          </div>
-          <div class="msg out">🔐 Login to App<div class="msg-time">9:42 <span class="msg-check">✓✓</span></div></div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>User taps Login</strong>Selects "Login to App" from the menu</div>
-    </div></div>
-
-    <div class="connector"><div class="arr"></div></div>
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">2</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:42</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg out">🔐 Login to App<div class="msg-time">9:42 <span class="msg-check">✓✓</span></div></div>
-          <div class="msg in">
-            🔐 <strong>Your Login Link</strong><br><br>
-            Tap the link below to log in to Clix:<br><br>
-            <span style="color:#53bdeb;word-break:break-all">https://app.clix.com/auth?token=a3f9e...</span><br><br>
-            ⚠️ Expires in <strong>10 minutes</strong><br>
-            ⚠️ Do not share this link
-            <div class="msg-time">9:42</div>
-          </div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>Magic link sent</strong>Secure one-time login link delivered</div>
-    </div></div>
-
-    <div class="connector"><div class="arr"></div></div>
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">3</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar" style="background:#075E54"><span>9:42</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div style="background:linear-gradient(135deg,#0a1a0f,#0d2d1a);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:14px;">
-          <div style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,#25D366,#128C7E);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 8px 32px rgba(37,211,102,.4)">▶</div>
-          <div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.5px">Clix</div>
-          <div style="font-size:12px;color:#25D366">✓ Verifying your link...</div>
-          <div style="width:80%;height:3px;background:#1a3a2a;border-radius:2px;overflow:hidden;">
-            <div style="width:100%;height:100%;background:linear-gradient(90deg,#25D366,#34d399);animation:load .8s ease forwards;"></div>
-          </div>
-        </div>
-        <div style="background:#0a2d1a;border-top:1px solid rgba(37,211,102,.2);padding:14px;text-align:center;">
-          <div style="font-size:16px;margin-bottom:6px">🎉</div>
-          <div style="font-size:12px;font-weight:700;color:#25D366">Welcome back!</div>
-          <div style="font-size:11px;color:#8696a0;margin-top:2px">Redirecting to home...</div>
-        </div>
-      </div></div>
-      <div class="step-txt"><strong>Clix opens — logged in!</strong>Deep link intercepted, JWT issued automatically</div>
-    </div></div>
-
-  </div>
-
-  <hr class="flow-sep">
-
-  <!-- Error: Not Registered -->
-  <div class="flow-label fade-up">
-    <div class="flb r">✕ Error Path — Mobile Not Registered</div>
-    <div class="flow-label-line"></div>
-  </div>
-
-  <div class="film-strip fade-up">
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num e">1</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:41</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg in">
-            <strong style="color:#25D366">Welcome to Clix! 👋</strong><br><br>Please choose:
-            <div class="wa-btn-list">
-              <div class="wa-btn sel">1. 🔐 Login to App</div>
-              <div class="wa-btn">2. 🔗 Link Mobile with Email</div>
-            </div>
-            <div class="msg-time">9:41</div>
-          </div>
-          <div class="msg out">🔐 Login to App<div class="msg-time">9:42 <span class="msg-check">✓✓</span></div></div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>User taps Login</strong>Mobile number not found in Clix</div>
-    </div></div>
-
-    <div class="connector"><div class="arr r"></div></div>
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num e">2</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:42</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg out">🔐 Login to App<div class="msg-time">9:42 <span class="msg-check">✓✓</span></div></div>
-          <div class="msg err">
-            ❌ <strong>Mobile Not Registered</strong><br><br>
-            Your mobile number is not linked to any Clix account.<br><br>
-            Use option <strong style="color:#25D366">[2] 🔗 Link Mobile with Email</strong> to connect your WhatsApp number to your account.
-            <div class="msg-time">9:42</div>
-          </div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>Error shown</strong>User directed to Link Mobile option</div>
-    </div></div>
-
-    <div class="connector"><div class="arr"></div></div>
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">3</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:42</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg err">❌ Mobile not registered. Use option [2] to link.<div class="msg-time">9:42</div></div>
-          <div class="msg in">
-            Please choose an option:
-            <div class="wa-btn-list">
-              <div class="wa-btn">1. 🔐 Login to App</div>
-              <div class="wa-btn sel">2. 🔗 Link Mobile with Email</div>
-              <div class="wa-btn">3. ❓ Help &amp; Support</div>
-              <div class="wa-btn">4. 📞 Contact Us</div>
-            </div>
-            <div class="msg-time">9:42</div>
-          </div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>Main menu re-shown</strong>User can immediately tap option 2</div>
-    </div></div>
-
-  </div>
-</section>
-
-<hr class="section-divider">
-
-<!-- ══ LINK MOBILE FLOW ══ -->
-<section id="link-flow" class="page-section">
-  <div class="sec-head fade-up">
-    <div class="sec-tag tag-p">Flow 2 — Link Mobile</div>
-    <h2 class="sec-title">Link Mobile with Email</h2>
-    <p class="sec-desc">First-time WhatsApp login setup. User proves they own their Clix account via email OTP — after that, magic link login works forever.</p>
-  </div>
-
-  <!-- Happy Path -->
-  <div class="flow-label fade-up">
-    <div class="flb g">✓ Happy Path — Successful Linking</div>
-    <div class="flow-label-line"></div>
-  </div>
-
-  <div class="film-strip fade-up">
-
-    <!-- Step 1 -->
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">1</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:43</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg in">
-            Please choose:
-            <div class="wa-btn-list">
-              <div class="wa-btn">1. 🔐 Login to App</div>
-              <div class="wa-btn sel">2. 🔗 Link Mobile with Email</div>
-              <div class="wa-btn">3. ❓ Help</div>
-            </div>
-            <div class="msg-time">9:43</div>
-          </div>
-          <div class="msg out">🔗 Link Mobile with Email<div class="msg-time">9:43 <span class="msg-check">✓✓</span></div></div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>User selects option 2</strong>Initiates the linking flow</div>
-    </div></div>
-
-    <div class="connector"><div class="arr"></div></div>
-
-    <!-- Step 2 -->
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">2</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:43</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg out">🔗 Link Mobile with Email<div class="msg-time">9:43 <span class="msg-check">✓✓</span></div></div>
-          <div class="msg in">
-            🔗 <strong>Link Mobile with Email</strong><br><br>
-            Please enter the <strong>email address</strong> linked to your Clix account:
-            <div class="msg-time">9:43</div>
-          </div>
-          <div class="msg out">user@example.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>User enters email</strong>Clix checks it exists &amp; mobile is not yet linked</div>
-    </div></div>
-
-    <div class="connector"><div class="arr"></div></div>
-
-    <!-- Step 3 -->
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">3</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:44</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg out">user@example.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
-          <div class="msg in">
-            ✅ <strong>OTP Sent!</strong><br><br>
-            We've sent a <strong>6-digit OTP</strong> to:<br>
-            <span style="color:#53bdeb">user@example.com</span><br><br>
-            Please enter the OTP here to verify.<br><br>
-            ⚠️ Expires in <strong>10 minutes</strong>
-            <div class="msg-time">9:44</div>
-          </div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>OTP sent to email</strong>6-digit code, single use, 10 min expiry</div>
-    </div></div>
-
-    <div class="connector"><div class="arr"></div></div>
-
-    <!-- Step 4 -->
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">4</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:45</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg in">OTP expires in <strong>10 minutes</strong><div class="msg-time">9:44</div></div>
-          <div class="msg out">847291<div class="msg-time">9:45 <span class="msg-check">✓✓</span></div></div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>User enters OTP</strong>Checks email, replies with 6-digit code</div>
-    </div></div>
-
-    <div class="connector"><div class="arr"></div></div>
-
-    <!-- Step 5 -->
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">5</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:45</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg out">847291<div class="msg-time">9:45 <span class="msg-check">✓✓</span></div></div>
-          <div class="msg suc">
-            🎉 <strong style="color:#25D366">Successfully Linked!</strong><br><br>
-            Your mobile number is now linked to your Clix account.<br><br>
-            Use option <strong style="color:#25D366">[1] 🔐 Login</strong> to access Clix via WhatsApp anytime!
-            <div class="msg-time">9:45</div>
-          </div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>Mobile linked! 🎉</strong>OTP verified, number saved to Clix account</div>
-    </div></div>
-
-    <div class="connector"><div class="arr"></div></div>
-
-    <!-- Step 6: Main menu re-shown -->
-    <div class="film-step"><div class="step-card">
-      <div class="step-num">6</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:45</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg suc">🎉 Successfully Linked!<div class="msg-time">9:45</div></div>
-          <div class="msg in">
-            What would you like to do next?
-            <div class="wa-btn-list">
-              <div class="wa-btn sel">1. 🔐 Login to App</div>
-              <div class="wa-btn">2. 🔗 Link Mobile with Email</div>
-              <div class="wa-btn">3. ❓ Help &amp; Support</div>
-              <div class="wa-btn">4. 📞 Contact Us</div>
-            </div>
-            <div class="msg-time">9:45</div>
-          </div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>Main menu re-shown</strong>User can instantly tap Login to enter the app</div>
-    </div></div>
-
-  </div>
-
-  <hr class="flow-sep">
-
-  <!-- Error: Mobile Already Linked -->
-  <div class="flow-label fade-up">
-    <div class="flb r">✕ Error Path — Mobile Number Already Linked</div>
-    <div class="flow-label-line"></div>
-  </div>
-
-  <div class="film-strip fade-up">
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num e">1</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:43</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg in">
-            Please choose:
-            <div class="wa-btn-list">
-              <div class="wa-btn">1. 🔐 Login to App</div>
-              <div class="wa-btn sel">2. 🔗 Link Mobile with Email</div>
-            </div>
-            <div class="msg-time">9:43</div>
-          </div>
-          <div class="msg out">🔗 Link Mobile with Email<div class="msg-time">9:43 <span class="msg-check">✓✓</span></div></div>
-          <div class="msg in">Please enter your Clix email address:<div class="msg-time">9:43</div></div>
-          <div class="msg out">user@example.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>User enters email</strong>Clix checks if this mobile is already linked</div>
-    </div></div>
-
-    <div class="connector"><div class="arr r"></div></div>
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num e">2</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:44</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg out">user@example.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
-          <div class="msg err">
-            ❌ <strong>Mobile Already Linked</strong><br><br>
-            This mobile number is <strong>already linked</strong> to a Clix account.<br><br>
-            Use option <strong style="color:#25D366">[1] 🔐 Login</strong> to access the app directly.
-            <div class="msg-time">9:44</div>
-          </div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>Duplicate detected</strong>Mobile already exists — directed to Login</div>
-    </div></div>
-
-  </div>
-
-  <hr class="flow-sep">
-
-  <!-- Error: Email Not Found -->
-  <div class="flow-label fade-up">
-    <div class="flb r">✕ Error Path — Email Not in Clix</div>
-    <div class="flow-label-line"></div>
-  </div>
-
-  <div class="film-strip fade-up">
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num e">1</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:44</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg in">Please enter your Clix email address:<div class="msg-time">9:44</div></div>
-          <div class="msg out">unknown@xyz.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>User enters email</strong>Email not found in Clix database</div>
-    </div></div>
-
-    <div class="connector"><div class="arr r"></div></div>
-
-    <div class="film-step"><div class="step-card">
-      <div class="step-num e">2</div>
-      <div class="phone"><div class="phone-inner">
-        <div class="sbar"><span>9:44</span><div class="sbar-right"><span>●●●●</span><span>100%</span></div></div>
-        <div class="wa-hdr"><div class="wa-back">‹</div><div class="wa-ava">▶</div><div class="wa-info"><div class="wa-name">Clix Bot</div><div class="wa-status">● online</div></div><div class="wa-hdr-ic"><span>⋮</span></div></div>
-        <div class="wa-chat">
-          <span class="date-chip">Today</span>
-          <div class="msg out">unknown@xyz.com<div class="msg-time">9:44 <span class="msg-check">✓✓</span></div></div>
-          <div class="msg err">
-            ❌ <strong>Account Not Found</strong><br><br>
-            No Clix account found with this email.<br><br>
-            Please <strong>sign up in the Clix app first</strong>, then come back here to link your mobile number.<br><br>
-            📲 Download: <span style="color:#53bdeb">app.clix.com</span>
-            <div class="msg-time">9:44</div>
-          </div>
-        </div>
-        <div class="wa-inp"><div class="wa-inp-field">Type a message</div><div class="wa-send">➤</div></div>
-      </div></div>
-      <div class="step-txt"><strong>Email not found</strong>User directed to sign up in Clix first</div>
-    </div></div>
-
-  </div>
-</section>
-
+<div id="toasts"></div>
 
 <script>
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
-}, { threshold: 0.06 });
-document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  /* ---- mermaid ---- */
+  mermaid.initialize({startOnLoad:false, theme:'base', securityLevel:'loose',
+    themeVariables:{
+      primaryColor:'#FBF8F6', primaryTextColor:'#1A3F4A', primaryBorderColor:'#FC9369',
+      lineColor:'#3D5C66', secondaryColor:'#DCE4E7', tertiaryColor:'#fff',
+      fontFamily:'Anek Latin, sans-serif', fontSize:'14px',
+      actorBkg:'#152a3a', actorTextColor:'#fff', actorBorder:'#152a3a',
+      noteBkgColor:'#fef3c7', noteBorderColor:'#fcd34d'
+    }});
+  let mermaidRendered=false;
+  function renderMermaid(){ if(mermaidRendered) return; mermaidRendered=true; mermaid.run({querySelector:'.mermaid'}); }
 
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('.nav-link');
-window.addEventListener('scroll', () => {
-  let cur = '';
-  sections.forEach(s => { if (s.getBoundingClientRect().top <= 80) cur = s.id; });
-  navLinks.forEach(l => {
-    const a = l.getAttribute('href') === '#' + cur;
-    l.style.color = a ? 'var(--wa-green)' : '';
-    l.style.borderBottomColor = a ? 'var(--wa-green)' : '';
-  });
-}, { passive:true });
+  /* ---- diagram modal ---- */
+  function openDiagrams(){ document.getElementById('dmodal').classList.add('show'); renderMermaid(); }
+  function closeDiagrams(){ document.getElementById('dmodal').classList.remove('show'); }
+  function showPane(btn){
+    document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.dpane').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active'); document.getElementById(btn.dataset.pane).classList.add('active');
+  }
+
+  /* ---- assign demo ---- */
+  function openAssign(){ document.getElementById('assignOv').classList.add('show'); }
+  function closeAssign(){ document.getElementById('assignOv').classList.remove('show'); }
+
+  /* ---- toasts ---- */
+  const ICONS={ok:'✓',err:'!',info:'i'};
+  function toast(type,title,desc){
+    const wrap=document.getElementById('toasts');
+    const el=document.createElement('div'); el.className='toast '+type;
+    el.innerHTML='<div class="ti">'+(ICONS[type]||'i')+'</div><div><div class="tt">'+title+'</div>'+(desc?'<div class="td">'+desc+'</div>':'')+'</div>';
+    wrap.appendChild(el);
+    setTimeout(()=>{el.style.transition='opacity .3s,transform .3s';el.style.opacity='0';el.style.transform='translateY(8px)';setTimeout(()=>el.remove(),300);},4200);
+  }
+
+  /* ---- reveal / copy code ---- */
+  function reveal(btn){
+    const span=btn.closest('.codecell').querySelector('.codetxt');
+    const full=span.dataset.full;
+    if(span.textContent.indexOf('•')>-1){ span.textContent=full; btn.textContent='🙈'; }
+    else { span.textContent=full.split('-')[0]+'-••••••••'; btn.textContent='👁'; }
+  }
+  function copyCode(btn,demo){
+    let code='ASHTA-7K2M9QXP';
+    if(btn && !demo){ code=btn.closest('.codecell').querySelector('.codetxt').dataset.full; }
+    if(navigator.clipboard){ navigator.clipboard.writeText(code).catch(()=>{}); }
+    toast('ok','Copied to clipboard', code);
+  }
+
+  /* ---- doc nav active state ---- */
+  const links=[...document.querySelectorAll('.docnav a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){
+      const id='#'+e.target.id; links.forEach(l=>l.classList.toggle('active', l.getAttribute('href')===id));
+    }});
+  },{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&obs.observe(s));
+
+  /* ---- keyboard / overlay close ---- */
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeDiagrams(); closeAssign(); }});
+  document.querySelectorAll('.ov').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show'); }));
 </script>
 </body>
 </html>
